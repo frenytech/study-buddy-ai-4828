@@ -10,6 +10,13 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AiTutorRouteImport } from './routes/ai-tutor'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as FeaturesRouteImport } from './routes/features'
+import { Route as JambRouteImport } from './routes/jamb'
+import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as WaecRouteImport } from './routes/waec'
 import { Route as ApiTutorRouteImport } from './routes/api/tutor'
 import { Route as ApiPaystackInitRouteImport } from './routes/api/paystack/init'
 import { Route as ApiPaystackVerifyRouteImport } from './routes/api/paystack/verify'
@@ -18,6 +25,41 @@ import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/publi
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AiTutorRoute = AiTutorRouteImport.update({
+  id: '/ai-tutor',
+  path: '/ai-tutor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesRoute = FeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JambRoute = JambRouteImport.update({
+  id: '/jamb',
+  path: '/jamb',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WaecRoute = WaecRouteImport.update({
+  id: '/waec',
+  path: '/waec',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiTutorRoute = ApiTutorRouteImport.update({
@@ -44,6 +86,13 @@ const ApiPublicPaystackWebhookRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/ai-tutor': typeof AiTutorRoute
+  '/auth': typeof AuthRoute
+  '/features': typeof FeaturesRoute
+  '/jamb': typeof JambRoute
+  '/pricing': typeof PricingRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/waec': typeof WaecRoute
   '/api/tutor': typeof ApiTutorRoute
   '/api/paystack/init': typeof ApiPaystackInitRoute
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
@@ -51,6 +100,13 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/ai-tutor': typeof AiTutorRoute
+  '/auth': typeof AuthRoute
+  '/features': typeof FeaturesRoute
+  '/jamb': typeof JambRoute
+  '/pricing': typeof PricingRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/waec': typeof WaecRoute
   '/api/tutor': typeof ApiTutorRoute
   '/api/paystack/init': typeof ApiPaystackInitRoute
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
@@ -59,6 +115,13 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/ai-tutor': typeof AiTutorRoute
+  '/auth': typeof AuthRoute
+  '/features': typeof FeaturesRoute
+  '/jamb': typeof JambRoute
+  '/pricing': typeof PricingRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/waec': typeof WaecRoute
   '/api/tutor': typeof ApiTutorRoute
   '/api/paystack/init': typeof ApiPaystackInitRoute
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
@@ -68,6 +131,13 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/ai-tutor'
+    | '/auth'
+    | '/features'
+    | '/jamb'
+    | '/pricing'
+    | '/reset-password'
+    | '/waec'
     | '/api/tutor'
     | '/api/paystack/init'
     | '/api/paystack/verify'
@@ -75,6 +145,13 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/ai-tutor'
+    | '/auth'
+    | '/features'
+    | '/jamb'
+    | '/pricing'
+    | '/reset-password'
+    | '/waec'
     | '/api/tutor'
     | '/api/paystack/init'
     | '/api/paystack/verify'
@@ -82,6 +159,13 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/ai-tutor'
+    | '/auth'
+    | '/features'
+    | '/jamb'
+    | '/pricing'
+    | '/reset-password'
+    | '/waec'
     | '/api/tutor'
     | '/api/paystack/init'
     | '/api/paystack/verify'
@@ -90,6 +174,13 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AiTutorRoute: typeof AiTutorRoute
+  AuthRoute: typeof AuthRoute
+  FeaturesRoute: typeof FeaturesRoute
+  JambRoute: typeof JambRoute
+  PricingRoute: typeof PricingRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
+  WaecRoute: typeof WaecRoute
   ApiTutorRoute: typeof ApiTutorRoute
   ApiPaystackInitRoute: typeof ApiPaystackInitRoute
   ApiPaystackVerifyRoute: typeof ApiPaystackVerifyRoute
@@ -103,6 +194,55 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ai-tutor': {
+      id: '/ai-tutor'
+      path: '/ai-tutor'
+      fullPath: '/ai-tutor'
+      preLoaderRoute: typeof AiTutorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features': {
+      id: '/features'
+      path: '/features'
+      fullPath: '/features'
+      preLoaderRoute: typeof FeaturesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jamb': {
+      id: '/jamb'
+      path: '/jamb'
+      fullPath: '/jamb'
+      preLoaderRoute: typeof JambRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/waec': {
+      id: '/waec'
+      path: '/waec'
+      fullPath: '/waec'
+      preLoaderRoute: typeof WaecRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/tutor': {
@@ -138,6 +278,13 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AiTutorRoute: AiTutorRoute,
+  AuthRoute: AuthRoute,
+  FeaturesRoute: FeaturesRoute,
+  JambRoute: JambRoute,
+  PricingRoute: PricingRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
+  WaecRoute: WaecRoute,
   ApiTutorRoute: ApiTutorRoute,
   ApiPaystackInitRoute: ApiPaystackInitRoute,
   ApiPaystackVerifyRoute: ApiPaystackVerifyRoute,
