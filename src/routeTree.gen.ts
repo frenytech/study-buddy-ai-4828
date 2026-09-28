@@ -13,11 +13,13 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AiTutorRouteImport } from './routes/ai-tutor'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CbtRouteImport } from './routes/cbt'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as JambRouteImport } from './routes/jamb'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as WaecRouteImport } from './routes/waec'
+import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedPlannerRouteImport } from './routes/_authenticated/planner'
 import { Route as AuthenticatedTutorRouteImport } from './routes/_authenticated/tutor'
@@ -50,6 +52,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CbtRoute = CbtRouteImport.update({
+  id: '/cbt',
+  path: '/cbt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FeaturesRoute = FeaturesRouteImport.update({
   id: '/features',
   path: '/features',
@@ -74,6 +81,11 @@ const WaecRoute = WaecRouteImport.update({
   id: '/waec',
   path: '/waec',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
@@ -145,11 +157,13 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ai-tutor': typeof AiTutorRoute
   '/auth': typeof AuthRoute
+  '/cbt': typeof CbtRoute
   '/features': typeof FeaturesRoute
   '/jamb': typeof JambRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/waec': typeof WaecRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/planner': typeof AuthenticatedPlannerRoute
   '/tutor': typeof AuthenticatedTutorRoute
@@ -167,11 +181,13 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ai-tutor': typeof AiTutorRoute
   '/auth': typeof AuthRoute
+  '/cbt': typeof AuthenticatedCbtIndexRoute
   '/features': typeof FeaturesRoute
   '/jamb': typeof JambRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/waec': typeof WaecRoute
+  '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/planner': typeof AuthenticatedPlannerRoute
   '/tutor': typeof AuthenticatedTutorRoute
@@ -183,7 +199,6 @@ export interface FileRoutesByTo {
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
   '/billing': typeof AuthenticatedBillingIndexRoute
-  '/cbt': typeof AuthenticatedCbtIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -191,11 +206,13 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/ai-tutor': typeof AiTutorRoute
   '/auth': typeof AuthRoute
+  '/cbt': typeof CbtRoute
   '/features': typeof FeaturesRoute
   '/jamb': typeof JambRoute
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/waec': typeof WaecRoute
+  '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/planner': typeof AuthenticatedPlannerRoute
   '/_authenticated/tutor': typeof AuthenticatedTutorRoute
@@ -215,11 +232,13 @@ export interface FileRouteTypes {
     | '/'
     | '/ai-tutor'
     | '/auth'
+    | '/cbt'
     | '/features'
     | '/jamb'
     | '/pricing'
     | '/reset-password'
     | '/waec'
+    | '/admin'
     | '/dashboard'
     | '/planner'
     | '/tutor'
@@ -237,11 +256,13 @@ export interface FileRouteTypes {
     | '/'
     | '/ai-tutor'
     | '/auth'
+    | '/cbt'
     | '/features'
     | '/jamb'
     | '/pricing'
     | '/reset-password'
     | '/waec'
+    | '/admin'
     | '/dashboard'
     | '/planner'
     | '/tutor'
@@ -253,18 +274,19 @@ export interface FileRouteTypes {
     | '/api/paystack/verify'
     | '/api/public/paystack-webhook'
     | '/billing'
-    | '/cbt'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/ai-tutor'
     | '/auth'
+    | '/cbt'
     | '/features'
     | '/jamb'
     | '/pricing'
     | '/reset-password'
     | '/waec'
+    | '/_authenticated/admin'
     | '/_authenticated/dashboard'
     | '/_authenticated/planner'
     | '/_authenticated/tutor'
@@ -284,6 +306,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AiTutorRoute: typeof AiTutorRoute
   AuthRoute: typeof AuthRoute
+  CbtRoute: typeof CbtRoute
   FeaturesRoute: typeof FeaturesRoute
   JambRoute: typeof JambRoute
   PricingRoute: typeof PricingRoute
@@ -325,6 +348,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cbt': {
+      id: '/cbt'
+      path: '/cbt'
+      fullPath: '/cbt'
+      preLoaderRoute: typeof CbtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/features': {
       id: '/features'
       path: '/features'
@@ -359,6 +389,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/waec'
       preLoaderRoute: typeof WaecRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/admin': {
+      id: '/_authenticated/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
@@ -448,6 +485,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedPlannerRoute: typeof AuthenticatedPlannerRoute
   AuthenticatedTutorRoute: typeof AuthenticatedTutorRoute
@@ -459,6 +497,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAdminRoute: AuthenticatedAdminRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedPlannerRoute: AuthenticatedPlannerRoute,
   AuthenticatedTutorRoute: AuthenticatedTutorRoute,
@@ -477,6 +516,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AiTutorRoute: AiTutorRoute,
   AuthRoute: AuthRoute,
+  CbtRoute: CbtRoute,
   FeaturesRoute: FeaturesRoute,
   JambRoute: JambRoute,
   PricingRoute: PricingRoute,
