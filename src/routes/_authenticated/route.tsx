@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, redirect, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, Timer, Bot, CalendarDays, CreditCard, Shield, LogOut } from "lucide-react";
+import { LayoutDashboard, Timer, Bot, CalendarDays, CreditCard, Shield, FileText, LogOut } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import { Logo } from "@/components/brand";
@@ -18,6 +18,7 @@ const links = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/cbt", label: "CBT Practice", icon: Timer },
   { to: "/tutor", label: "AI Tutor", icon: Bot },
+  { to: "/materials", label: "Materials", icon: FileText },
   { to: "/planner", label: "Planner", icon: CalendarDays },
   { to: "/billing", label: "Plan", icon: CreditCard },
 ] as const;

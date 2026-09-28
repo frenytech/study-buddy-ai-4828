@@ -5,7 +5,8 @@ import { toast } from "sonner";
 import { FileText, Upload, Loader2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { supabase, authHeader } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
+import { generateStudySet } from "@/lib/materials";
 import { useAuth } from "@/lib/auth";
 import { chunkText, extractPdfText } from "@/lib/pdf-extract";
 
@@ -13,14 +14,6 @@ export const Route = createFileRoute("/_authenticated/materials/")({
   head: () => ({ meta: [{ title: "My Materials — StudyAI" }, { name: "description", content: "Upload PDFs and turn them into summaries, flashcards and quizzes." }] }),
   component: Materials,
 });
-
-export async function generateStudySet(materialId: string) {
-  const res = await fetch("/api/materials/generate", {
-    method: "POST", headers: { "Content-Type": "application/json", ...(await authHeader()) }, body: JSON.stringify({ materialId }),
-  });
-  const b = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(b.error ?? "Couldn't generate study material");
-}
 
 function Materials() {
   const { user } = useAuth();

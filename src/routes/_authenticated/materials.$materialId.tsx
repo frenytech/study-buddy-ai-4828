@@ -6,7 +6,7 @@ import { ArrowLeft, ChevronLeft, ChevronRight, RotateCcw, Loader2, Check, X, Ext
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/lib/supabase";
-import { generateStudySet } from "./materials.index";
+import { generateStudySet } from "@/lib/materials";
 
 export const Route = createFileRoute("/_authenticated/materials/$materialId")({
   head: () => ({ meta: [{ title: "Study set — StudyAI" }, { name: "robots", content: "noindex" }] }),
