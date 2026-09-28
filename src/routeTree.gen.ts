@@ -10,33 +10,90 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiTutorRouteImport } from './routes/api/tutor'
+import { Route as ApiPaystackInitRouteImport } from './routes/api/paystack/init'
+import { Route as ApiPaystackVerifyRouteImport } from './routes/api/paystack/verify'
+import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack-webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiTutorRoute = ApiTutorRouteImport.update({
+  id: '/api/tutor',
+  path: '/api/tutor',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPaystackInitRoute = ApiPaystackInitRouteImport.update({
+  id: '/api/paystack/init',
+  path: '/api/paystack/init',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPaystackVerifyRoute = ApiPaystackVerifyRouteImport.update({
+  id: '/api/paystack/verify',
+  path: '/api/paystack/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicPaystackWebhookRoute =
+  ApiPublicPaystackWebhookRouteImport.update({
+    id: '/api/public/paystack-webhook',
+    path: '/api/public/paystack-webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/tutor': typeof ApiTutorRoute
+  '/api/paystack/init': typeof ApiPaystackInitRoute
+  '/api/paystack/verify': typeof ApiPaystackVerifyRoute
+  '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/tutor': typeof ApiTutorRoute
+  '/api/paystack/init': typeof ApiPaystackInitRoute
+  '/api/paystack/verify': typeof ApiPaystackVerifyRoute
+  '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/tutor': typeof ApiTutorRoute
+  '/api/paystack/init': typeof ApiPaystackInitRoute
+  '/api/paystack/verify': typeof ApiPaystackVerifyRoute
+  '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/api/tutor'
+    | '/api/paystack/init'
+    | '/api/paystack/verify'
+    | '/api/public/paystack-webhook'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/api/tutor'
+    | '/api/paystack/init'
+    | '/api/paystack/verify'
+    | '/api/public/paystack-webhook'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/tutor'
+    | '/api/paystack/init'
+    | '/api/paystack/verify'
+    | '/api/public/paystack-webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiTutorRoute: typeof ApiTutorRoute
+  ApiPaystackInitRoute: typeof ApiPaystackInitRoute
+  ApiPaystackVerifyRoute: typeof ApiPaystackVerifyRoute
+  ApiPublicPaystackWebhookRoute: typeof ApiPublicPaystackWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +105,43 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/tutor': {
+      id: '/api/tutor'
+      path: '/api/tutor'
+      fullPath: '/api/tutor'
+      preLoaderRoute: typeof ApiTutorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/paystack/init': {
+      id: '/api/paystack/init'
+      path: '/api/paystack/init'
+      fullPath: '/api/paystack/init'
+      preLoaderRoute: typeof ApiPaystackInitRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/paystack/verify': {
+      id: '/api/paystack/verify'
+      path: '/api/paystack/verify'
+      fullPath: '/api/paystack/verify'
+      preLoaderRoute: typeof ApiPaystackVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/paystack-webhook': {
+      id: '/api/public/paystack-webhook'
+      path: '/api/public/paystack-webhook'
+      fullPath: '/api/public/paystack-webhook'
+      preLoaderRoute: typeof ApiPublicPaystackWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiTutorRoute: ApiTutorRoute,
+  ApiPaystackInitRoute: ApiPaystackInitRoute,
+  ApiPaystackVerifyRoute: ApiPaystackVerifyRoute,
+  ApiPublicPaystackWebhookRoute: ApiPublicPaystackWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
