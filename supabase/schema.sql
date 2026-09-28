@@ -327,3 +327,72 @@ where s.exam='jamb' and s.name='Mathematics'
 -- ============ MAKE YOURSELF ADMIN (edit email, then run) ============
 -- insert into public.user_roles (user_id, role)
 -- select id, 'admin' from auth.users where email = 'you@example.com' on conflict do nothing;
+
+-- =====================================================================
+-- STUDY MATERIALS (PDF upload, chunks, summaries, flashcards, quizzes)
+-- =====================================================================
+create table if not exists public.materials (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references auth.users(id) on delete cascade,
+  title text not null,
+  file_path text not null,
+  page_count int,
+  char_count int,
+  status text not null default 'uploaded' check (status in ('uploaded','processing','ready','failed')),
+  summary text,
+  error text,
+  created_at timestamptz not null default now()
+);
+create table if not exists public.material_chunks (
+  id uuid primary key default gen_random_uuid(),
+  material_id uuid not null references public.materials(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  idx int not null,
+  content text not null,
+  unique (material_id, idx)
+);
+create table if not exists public.flashcards (
+  id uuid primary key default gen_random_uuid(),
+  material_id uuid not null references public.materials(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  front text not null,
+  back text not null,
+  known boolean not null default false,
+  created_at timestamptz not null default now()
+);
+create table if not exists public.quizzes (
+  id uuid primary key default gen_random_uuid(),
+  material_id uuid not null references public.materials(id) on delete cascade,
+  user_id uuid not null references auth.users(id) on delete cascade,
+  questions jsonb not null,   -- [{question, options:[{key,text}], answer, explanation}]
+  best_score int,
+  created_at timestamptz not null default now()
+);
+grant select, insert, update, delete on public.materials, public.material_chunks, public.flashcards, public.quizzes to authenticated;
+grant all on public.materials, public.material_chunks, public.flashcards, public.quizzes to service_role;
+alter table public.materials enable row level security;
+alter table public.material_chunks enable row level security;
+alter table public.flashcards enable row level security;
+alter table public.quizzes enable row level security;
+drop policy if exists "own materials" on public.materials;
+create policy "own materials" on public.materials for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+drop policy if exists "own chunks" on public.material_chunks;
+create policy "own chunks" on public.material_chunks for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+drop policy if exists "own flashcards" on public.flashcards;
+create policy "own flashcards" on public.flashcards for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+drop policy if exists "own quizzes" on public.quizzes;
+create policy "own quizzes" on public.quizzes for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+-- Private storage bucket; each student's files live under "<user_id>/..."
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('materials', 'materials', false, 20971520, array['application/pdf'])
+on conflict (id) do nothing;
+drop policy if exists "materials read own" on storage.objects;
+create policy "materials read own" on storage.objects for select to authenticated
+  using (bucket_id = 'materials' and (storage.foldername(name))[1] = auth.uid()::text);
+drop policy if exists "materials upload own" on storage.objects;
+create policy "materials upload own" on storage.objects for insert to authenticated
+  with check (bucket_id = 'materials' and (storage.foldername(name))[1] = auth.uid()::text);
+drop policy if exists "materials delete own" on storage.objects;
+create policy "materials delete own" on storage.objects for delete to authenticated
+  using (bucket_id = 'materials' and (storage.foldername(name))[1] = auth.uid()::text);
