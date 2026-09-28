@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AiTutorRouteImport } from './routes/ai-tutor'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as FeaturesRouteImport } from './routes/features'
@@ -17,7 +18,15 @@ import { Route as JambRouteImport } from './routes/jamb'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as WaecRouteImport } from './routes/waec'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedPlannerRouteImport } from './routes/_authenticated/planner'
+import { Route as AuthenticatedTutorRouteImport } from './routes/_authenticated/tutor'
 import { Route as ApiTutorRouteImport } from './routes/api/tutor'
+import { Route as AuthenticatedBillingIndexRouteImport } from './routes/_authenticated/billing.index'
+import { Route as AuthenticatedBillingCallbackRouteImport } from './routes/_authenticated/billing.callback'
+import { Route as AuthenticatedCbtIndexRouteImport } from './routes/_authenticated/cbt.index'
+import { Route as AuthenticatedCbtSessionIdRouteImport } from './routes/_authenticated/cbt.$sessionId'
+import { Route as AuthenticatedResultsSessionIdRouteImport } from './routes/_authenticated/results.$sessionId'
 import { Route as ApiPaystackInitRouteImport } from './routes/api/paystack/init'
 import { Route as ApiPaystackVerifyRouteImport } from './routes/api/paystack/verify'
 import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack-webhook'
@@ -25,6 +34,10 @@ import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/publi
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AiTutorRoute = AiTutorRouteImport.update({
@@ -62,11 +75,55 @@ const WaecRoute = WaecRouteImport.update({
   path: '/waec',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPlannerRoute = AuthenticatedPlannerRouteImport.update({
+  id: '/planner',
+  path: '/planner',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedTutorRoute = AuthenticatedTutorRouteImport.update({
+  id: '/tutor',
+  path: '/tutor',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const ApiTutorRoute = ApiTutorRouteImport.update({
   id: '/api/tutor',
   path: '/api/tutor',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedBillingIndexRoute =
+  AuthenticatedBillingIndexRouteImport.update({
+    id: '/billing/',
+    path: '/billing/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedBillingCallbackRoute =
+  AuthenticatedBillingCallbackRouteImport.update({
+    id: '/billing/callback',
+    path: '/billing/callback',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCbtIndexRoute = AuthenticatedCbtIndexRouteImport.update({
+  id: '/cbt/',
+  path: '/cbt/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCbtSessionIdRoute =
+  AuthenticatedCbtSessionIdRouteImport.update({
+    id: '/cbt/$sessionId',
+    path: '/cbt/$sessionId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedResultsSessionIdRoute =
+  AuthenticatedResultsSessionIdRouteImport.update({
+    id: '/results/$sessionId',
+    path: '/results/$sessionId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const ApiPaystackInitRoute = ApiPaystackInitRouteImport.update({
   id: '/api/paystack/init',
   path: '/api/paystack/init',
@@ -93,10 +150,18 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/waec': typeof WaecRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/planner': typeof AuthenticatedPlannerRoute
+  '/tutor': typeof AuthenticatedTutorRoute
   '/api/tutor': typeof ApiTutorRoute
+  '/billing/callback': typeof AuthenticatedBillingCallbackRoute
+  '/cbt/$sessionId': typeof AuthenticatedCbtSessionIdRoute
+  '/results/$sessionId': typeof AuthenticatedResultsSessionIdRoute
   '/api/paystack/init': typeof ApiPaystackInitRoute
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
+  '/billing/': typeof AuthenticatedBillingIndexRoute
+  '/cbt/': typeof AuthenticatedCbtIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -107,14 +172,23 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/waec': typeof WaecRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/planner': typeof AuthenticatedPlannerRoute
+  '/tutor': typeof AuthenticatedTutorRoute
   '/api/tutor': typeof ApiTutorRoute
+  '/billing/callback': typeof AuthenticatedBillingCallbackRoute
+  '/cbt/$sessionId': typeof AuthenticatedCbtSessionIdRoute
+  '/results/$sessionId': typeof AuthenticatedResultsSessionIdRoute
   '/api/paystack/init': typeof ApiPaystackInitRoute
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
+  '/billing': typeof AuthenticatedBillingIndexRoute
+  '/cbt': typeof AuthenticatedCbtIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/ai-tutor': typeof AiTutorRoute
   '/auth': typeof AuthRoute
   '/features': typeof FeaturesRoute
@@ -122,10 +196,18 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/waec': typeof WaecRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/planner': typeof AuthenticatedPlannerRoute
+  '/_authenticated/tutor': typeof AuthenticatedTutorRoute
   '/api/tutor': typeof ApiTutorRoute
+  '/_authenticated/billing/callback': typeof AuthenticatedBillingCallbackRoute
+  '/_authenticated/cbt/$sessionId': typeof AuthenticatedCbtSessionIdRoute
+  '/_authenticated/results/$sessionId': typeof AuthenticatedResultsSessionIdRoute
   '/api/paystack/init': typeof ApiPaystackInitRoute
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
+  '/_authenticated/billing/': typeof AuthenticatedBillingIndexRoute
+  '/_authenticated/cbt/': typeof AuthenticatedCbtIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -138,10 +220,18 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/reset-password'
     | '/waec'
+    | '/dashboard'
+    | '/planner'
+    | '/tutor'
     | '/api/tutor'
+    | '/billing/callback'
+    | '/cbt/$sessionId'
+    | '/results/$sessionId'
     | '/api/paystack/init'
     | '/api/paystack/verify'
     | '/api/public/paystack-webhook'
+    | '/billing/'
+    | '/cbt/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -152,13 +242,22 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/reset-password'
     | '/waec'
+    | '/dashboard'
+    | '/planner'
+    | '/tutor'
     | '/api/tutor'
+    | '/billing/callback'
+    | '/cbt/$sessionId'
+    | '/results/$sessionId'
     | '/api/paystack/init'
     | '/api/paystack/verify'
     | '/api/public/paystack-webhook'
+    | '/billing'
+    | '/cbt'
   id:
     | '__root__'
     | '/'
+    | '/_authenticated'
     | '/ai-tutor'
     | '/auth'
     | '/features'
@@ -166,14 +265,23 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/reset-password'
     | '/waec'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/planner'
+    | '/_authenticated/tutor'
     | '/api/tutor'
+    | '/_authenticated/billing/callback'
+    | '/_authenticated/cbt/$sessionId'
+    | '/_authenticated/results/$sessionId'
     | '/api/paystack/init'
     | '/api/paystack/verify'
     | '/api/public/paystack-webhook'
+    | '/_authenticated/billing/'
+    | '/_authenticated/cbt/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AiTutorRoute: typeof AiTutorRoute
   AuthRoute: typeof AuthRoute
   FeaturesRoute: typeof FeaturesRoute
@@ -194,6 +302,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ai-tutor': {
@@ -245,12 +360,68 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WaecRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/planner': {
+      id: '/_authenticated/planner'
+      path: '/planner'
+      fullPath: '/planner'
+      preLoaderRoute: typeof AuthenticatedPlannerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/tutor': {
+      id: '/_authenticated/tutor'
+      path: '/tutor'
+      fullPath: '/tutor'
+      preLoaderRoute: typeof AuthenticatedTutorRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/api/tutor': {
       id: '/api/tutor'
       path: '/api/tutor'
       fullPath: '/api/tutor'
       preLoaderRoute: typeof ApiTutorRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/billing/': {
+      id: '/_authenticated/billing/'
+      path: '/billing'
+      fullPath: '/billing/'
+      preLoaderRoute: typeof AuthenticatedBillingIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/billing/callback': {
+      id: '/_authenticated/billing/callback'
+      path: '/billing/callback'
+      fullPath: '/billing/callback'
+      preLoaderRoute: typeof AuthenticatedBillingCallbackRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/cbt/': {
+      id: '/_authenticated/cbt/'
+      path: '/cbt'
+      fullPath: '/cbt/'
+      preLoaderRoute: typeof AuthenticatedCbtIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/cbt/$sessionId': {
+      id: '/_authenticated/cbt/$sessionId'
+      path: '/cbt/$sessionId'
+      fullPath: '/cbt/$sessionId'
+      preLoaderRoute: typeof AuthenticatedCbtSessionIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/results/$sessionId': {
+      id: '/_authenticated/results/$sessionId'
+      path: '/results/$sessionId'
+      fullPath: '/results/$sessionId'
+      preLoaderRoute: typeof AuthenticatedResultsSessionIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/api/paystack/init': {
       id: '/api/paystack/init'
@@ -276,8 +447,34 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedPlannerRoute: typeof AuthenticatedPlannerRoute
+  AuthenticatedTutorRoute: typeof AuthenticatedTutorRoute
+  AuthenticatedBillingCallbackRoute: typeof AuthenticatedBillingCallbackRoute
+  AuthenticatedCbtSessionIdRoute: typeof AuthenticatedCbtSessionIdRoute
+  AuthenticatedResultsSessionIdRoute: typeof AuthenticatedResultsSessionIdRoute
+  AuthenticatedBillingIndexRoute: typeof AuthenticatedBillingIndexRoute
+  AuthenticatedCbtIndexRoute: typeof AuthenticatedCbtIndexRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedPlannerRoute: AuthenticatedPlannerRoute,
+  AuthenticatedTutorRoute: AuthenticatedTutorRoute,
+  AuthenticatedBillingCallbackRoute: AuthenticatedBillingCallbackRoute,
+  AuthenticatedCbtSessionIdRoute: AuthenticatedCbtSessionIdRoute,
+  AuthenticatedResultsSessionIdRoute: AuthenticatedResultsSessionIdRoute,
+  AuthenticatedBillingIndexRoute: AuthenticatedBillingIndexRoute,
+  AuthenticatedCbtIndexRoute: AuthenticatedCbtIndexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AiTutorRoute: AiTutorRoute,
   AuthRoute: AuthRoute,
   FeaturesRoute: FeaturesRoute,

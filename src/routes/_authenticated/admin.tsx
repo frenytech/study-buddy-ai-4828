@@ -1,0 +1,256 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { supabase } from "@/lib/supabase";
+import { useAuth } from "@/lib/auth";
+
+export const Route = createFileRoute("/_authenticated/admin")({
+  head: () => ({ meta: [{ title: "Admin Control Room — StudyAI" }, { name: "robots", content: "noindex" }] }),
+  component: Admin,
+});
+
+function Admin() {
+  const { isAdmin, loading } = useAuth();
+  if (loading) return null;
+  if (!isAdmin) return <p className="p-8 text-muted-foreground">You don't have access to this page.</p>;
+  return (
+    <div className="mx-auto max-w-6xl p-4 md:p-8">
+      <h1 className="text-3xl font-bold">Admin Control Room</h1>
+      <Tabs defaultValue="overview" className="mt-6">
+        <TabsList className="flex-wrap">
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="questions">Questions</TabsTrigger>
+          <TabsTrigger value="import">Bulk upload</TabsTrigger>
+          <TabsTrigger value="users">Users</TabsTrigger>
+          <TabsTrigger value="payments">Payments</TabsTrigger>
+        </TabsList>
+        <TabsContent value="overview"><Overview /></TabsContent>
+        <TabsContent value="questions"><Questions /></TabsContent>
+        <TabsContent value="import"><BulkImport /></TabsContent>
+        <TabsContent value="users"><Users /></TabsContent>
+        <TabsContent value="payments"><Payments /></TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+function useSubjects() {
+  return useQuery({ queryKey: ["subjects-all"], queryFn: async () => (await supabase.from("subjects").select("id,name,exam").order("name")).data ?? [] });
+}
+
+function Overview() {
+  const { data } = useQuery({
+    queryKey: ["admin-overview"],
+    queryFn: async () => {
+      const c = async (t: string, f?: (q: any) => any) => { let q: any = supabase.from(t).select("*", { count: "exact", head: true }); if (f) q = f(q); return (await q).count ?? 0; };
+      return {
+        users: await c("profiles"),
+        questions: await c("questions"),
+        published: await c("questions", (q) => q.eq("status", "published")),
+        tests: await c("cbt_sessions", (q) => q.not("submitted_at", "is", null)),
+        paid: await c("subscriptions", (q) => q.neq("plan", "free")),
+      };
+    },
+  });
+  const items = [["Students", data?.users], ["Questions", data?.questions], ["Published", data?.published], ["Tests taken", data?.tests], ["Paid subscribers", data?.paid]];
+  return (
+    <div className="mt-4 grid gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      {items.map(([l, v]) => <div key={l as string} className="rounded-2xl border border-border bg-card p-5 shadow-soft"><p className="font-display text-2xl font-bold">{v ?? "–"}</p><p className="text-sm text-muted-foreground">{l}</p></div>)}
+    </div>
+  );
+}
+
+const empty = { exam: "jamb", subject_id: "", year: "", question: "", A: "", B: "", C: "", D: "", answer: "A", explanation: "", source: "past" };
+
+function Questions() {
+  const qc = useQueryClient();
+  const { data: subjects } = useSubjects();
+  const [f, setF] = useState(empty);
+  const [filter, setFilter] = useState<string>("all");
+  const { data: qs } = useQuery({
+    queryKey: ["admin-questions", filter],
+    queryFn: async () => {
+      let q = supabase.from("questions").select("id,exam,question,answer,status,source,year,subjects(name)").order("created_at", { ascending: false }).limit(200);
+      if (filter !== "all") q = q.eq("subject_id", filter);
+      return (await q).data ?? [];
+    },
+  });
+  const refresh = () => qc.invalidateQueries({ queryKey: ["admin-questions"] });
+
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    if (!f.subject_id) return toast.error("Pick a subject");
+    const options = (["A", "B", "C", "D"] as const).filter((k) => f[k].trim()).map((k) => ({ key: k, text: f[k].trim() }));
+    const { error } = await supabase.from("questions").insert({
+      exam: f.exam, subject_id: f.subject_id, year: f.year ? Number(f.year) : null, question: f.question, options,
+      answer: f.answer, explanation: f.explanation || null, source: f.source, status: "draft",
+    });
+    if (error) return toast.error(error.message);
+    toast.success("Saved as draft");
+    setF({ ...empty, exam: f.exam, subject_id: f.subject_id, source: f.source });
+    refresh();
+  }
+  const set = (k: keyof typeof empty) => (e: any) => setF({ ...f, [k]: e.target.value });
+
+  return (
+    <div className="mt-4 grid gap-6 lg:grid-cols-[380px_1fr]">
+      <form onSubmit={save} className="space-y-3 rounded-2xl border border-border bg-card p-5 shadow-soft">
+        <h2 className="font-semibold">Add question</h2>
+        <div className="grid grid-cols-2 gap-2">
+          <Select value={f.exam} onValueChange={(v) => setF({ ...f, exam: v, subject_id: "" })}><SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent><SelectItem value="jamb">JAMB</SelectItem><SelectItem value="waec">WAEC</SelectItem></SelectContent></Select>
+          <Input placeholder="Year" value={f.year} onChange={set("year")} />
+        </div>
+        <Select value={f.subject_id} onValueChange={(v) => setF({ ...f, subject_id: v })}><SelectTrigger><SelectValue placeholder="Subject" /></SelectTrigger>
+          <SelectContent>{(subjects ?? []).filter((s) => s.exam === f.exam).map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select>
+        <Textarea required placeholder="Question" value={f.question} onChange={set("question")} />
+        {(["A", "B", "C", "D"] as const).map((k) => <Input key={k} required={k < "C"} placeholder={`Option ${k}`} value={f[k]} onChange={set(k)} />)}
+        <div className="grid grid-cols-2 gap-2">
+          <div><Label>Answer</Label><Select value={f.answer} onValueChange={(v) => setF({ ...f, answer: v })}><SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>{["A", "B", "C", "D"].map((k) => <SelectItem key={k} value={k}>{k}</SelectItem>)}</SelectContent></Select></div>
+          <div><Label>Type</Label><Select value={f.source} onValueChange={(v) => setF({ ...f, source: v })}><SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent><SelectItem value="past">Past question</SelectItem><SelectItem value="ai_practice">AI practice</SelectItem></SelectContent></Select></div>
+        </div>
+        <Textarea placeholder="Explanation (optional)" value={f.explanation} onChange={set("explanation")} />
+        <Button className="w-full">Save draft</Button>
+      </form>
+      <div>
+        <Select value={filter} onValueChange={setFilter}><SelectTrigger className="w-64"><SelectValue /></SelectTrigger>
+          <SelectContent><SelectItem value="all">All subjects</SelectItem>{(subjects ?? []).map((s) => <SelectItem key={s.id} value={s.id}>{s.exam.toUpperCase()} · {s.name}</SelectItem>)}</SelectContent></Select>
+        <div className="mt-4 space-y-2">
+          {(qs ?? []).map((q: any) => (
+            <div key={q.id} className="rounded-xl border border-border bg-card p-4">
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <Badge variant="outline">{q.exam.toUpperCase()} · {q.subjects?.name}</Badge>
+                <Badge variant={q.status === "published" ? "default" : "secondary"}>{q.status}</Badge>
+                <Badge variant="outline">{q.source === "past" ? `Past ${q.year ?? ""}` : "AI practice"}</Badge>
+                <span className="text-muted-foreground">Answer: {q.answer}</span>
+              </div>
+              <p className="mt-2 text-sm">{q.question}</p>
+              <div className="mt-3 flex gap-2">
+                <Button size="sm" variant="outline" onClick={async () => { await supabase.from("questions").update({ status: q.status === "published" ? "draft" : "published" }).eq("id", q.id); refresh(); }}>
+                  {q.status === "published" ? "Unpublish" : "Approve & publish"}
+                </Button>
+                <Button size="sm" variant="ghost" onClick={async () => { if (confirm("Delete this question?")) { await supabase.from("questions").delete().eq("id", q.id); refresh(); } }}>Delete</Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BulkImport() {
+  const { data: subjects } = useSubjects();
+  const [exam, setExam] = useState("jamb");
+  const [subject, setSubject] = useState("");
+  const [source, setSource] = useState("past");
+  const [text, setText] = useState("");
+  async function run() {
+    if (!subject) return toast.error("Pick a subject");
+    let rows: any[];
+    try { rows = JSON.parse(text); if (!Array.isArray(rows)) throw 0; } catch { return toast.error("Paste a valid JSON array"); }
+    const bad = rows.findIndex((r) => !r.question || !Array.isArray(r.options) || !r.answer);
+    if (bad >= 0) return toast.error(`Row ${bad + 1} is missing question, options or answer`);
+    const { error } = await supabase.from("questions").insert(rows.map((r) => ({
+      exam, subject_id: subject, source, status: "draft", question: String(r.question), answer: String(r.answer).toUpperCase(),
+      year: r.year ? Number(r.year) : null, explanation: r.explanation ?? null,
+      options: r.options.map((o: any, i: number) => typeof o === "string" ? { key: "ABCDE"[i], text: o } : o),
+    })));
+    if (error) return toast.error(error.message);
+    toast.success(`Imported ${rows.length} questions as drafts. Review and publish them in Questions.`);
+    setText("");
+  }
+  return (
+    <div className="mt-4 max-w-3xl space-y-3 rounded-2xl border border-border bg-card p-5 shadow-soft">
+      <p className="text-sm text-muted-foreground">Paste a JSON array. Each item: {`{"question": "...", "options": ["...","...","...","..."], "answer": "B", "year": 2019, "explanation": "..."}`}. Imports land as drafts for review.</p>
+      <div className="grid gap-2 sm:grid-cols-3">
+        <Select value={exam} onValueChange={(v) => { setExam(v); setSubject(""); }}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="jamb">JAMB</SelectItem><SelectItem value="waec">WAEC</SelectItem></SelectContent></Select>
+        <Select value={subject} onValueChange={setSubject}><SelectTrigger><SelectValue placeholder="Subject" /></SelectTrigger>
+          <SelectContent>{(subjects ?? []).filter((s) => s.exam === exam).map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select>
+        <Select value={source} onValueChange={setSource}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="past">Past questions</SelectItem><SelectItem value="ai_practice">AI practice</SelectItem></SelectContent></Select>
+      </div>
+      <Textarea rows={12} className="font-mono text-xs" value={text} onChange={(e) => setText(e.target.value)} />
+      <Button onClick={run}>Import</Button>
+    </div>
+  );
+}
+
+function Users() {
+  const qc = useQueryClient();
+  const { data } = useQuery({
+    queryKey: ["admin-users"],
+    queryFn: async () => {
+      const [{ data: p }, { data: r }, { data: s }] = await Promise.all([
+        supabase.from("profiles").select("id,full_name,email,created_at").order("created_at", { ascending: false }).limit(500),
+        supabase.from("user_roles").select("user_id,role").eq("role", "admin"),
+        supabase.from("subscriptions").select("user_id,plan,current_period_end"),
+      ]);
+      const admins = new Set((r ?? []).map((x) => x.user_id));
+      const subs = new Map((s ?? []).map((x) => [x.user_id, x]));
+      return (p ?? []).map((u) => ({ ...u, admin: admins.has(u.id), sub: subs.get(u.id) }));
+    },
+  });
+  async function toggle(id: string, admin: boolean) {
+    const { error } = admin
+      ? await supabase.from("user_roles").delete().eq("user_id", id).eq("role", "admin")
+      : await supabase.from("user_roles").insert({ user_id: id, role: "admin" });
+    if (error) toast.error(error.message);
+    qc.invalidateQueries({ queryKey: ["admin-users"] });
+  }
+  return (
+    <div className="mt-4 overflow-x-auto rounded-2xl border border-border bg-card">
+      <table className="w-full text-sm">
+        <thead className="bg-muted text-left"><tr><th className="p-3">Name</th><th className="p-3">Email</th><th className="p-3">Plan</th><th className="p-3">Joined</th><th className="p-3"></th></tr></thead>
+        <tbody>
+          {(data ?? []).map((u) => (
+            <tr key={u.id} className="border-t border-border">
+              <td className="p-3">{u.full_name ?? "—"} {u.admin && <Badge className="ml-1">admin</Badge>}</td>
+              <td className="p-3">{u.email}</td>
+              <td className="p-3 capitalize">{u.sub?.plan ?? "free"}</td>
+              <td className="p-3">{new Date(u.created_at).toLocaleDateString()}</td>
+              <td className="p-3 text-right"><Button size="sm" variant="outline" onClick={() => toggle(u.id, u.admin)}>{u.admin ? "Remove admin" : "Make admin"}</Button></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function Payments() {
+  const { data } = useQuery({
+    queryKey: ["admin-payments"],
+    queryFn: async () => (await supabase.from("payments").select("*").order("created_at", { ascending: false }).limit(300)).data ?? [],
+  });
+  const total = (data ?? []).filter((p: any) => p.status === "success").reduce((a: number, p: any) => a + p.amount_kobo, 0) / 100;
+  return (
+    <div className="mt-4">
+      <p className="mb-3 text-sm">Total received: <span className="font-semibold">₦{total.toLocaleString()}</span></p>
+      <div className="overflow-x-auto rounded-2xl border border-border bg-card">
+        <table className="w-full text-sm">
+          <thead className="bg-muted text-left"><tr><th className="p-3">Reference</th><th className="p-3">Plan</th><th className="p-3">Amount</th><th className="p-3">Status</th><th className="p-3">Date</th></tr></thead>
+          <tbody>
+            {(data ?? []).map((p: any) => (
+              <tr key={p.id} className="border-t border-border">
+                <td className="p-3 font-mono text-xs">{p.reference}</td><td className="p-3 capitalize">{p.plan}</td>
+                <td className="p-3">₦{(p.amount_kobo / 100).toLocaleString()}</td>
+                <td className="p-3"><Badge variant={p.status === "success" ? "default" : "secondary"}>{p.status}</Badge></td>
+                <td className="p-3">{new Date(p.created_at).toLocaleString()}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
