@@ -87,13 +87,13 @@ function Questions() {
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    if (!f.subject_id) return toast.error("Pick a subject");
+    if (!f.subject_id) { toast.error("Pick a subject"); return; }
     const options = (["A", "B", "C", "D"] as const).filter((k) => f[k].trim()).map((k) => ({ key: k, text: f[k].trim() }));
     const { error } = await supabase.from("questions").insert({
       exam: f.exam, subject_id: f.subject_id, year: f.year ? Number(f.year) : null, question: f.question, options,
       answer: f.answer, explanation: f.explanation || null, source: f.source, status: "draft",
     });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Saved as draft");
     setF({ ...empty, exam: f.exam, subject_id: f.subject_id, source: f.source });
     refresh();
@@ -156,17 +156,17 @@ function BulkImport() {
   const [source, setSource] = useState("past");
   const [text, setText] = useState("");
   async function run() {
-    if (!subject) return toast.error("Pick a subject");
+    if (!subject) { toast.error("Pick a subject"); return; }
     let rows: any[];
-    try { rows = JSON.parse(text); if (!Array.isArray(rows)) throw 0; } catch { return toast.error("Paste a valid JSON array"); }
+    try { rows = JSON.parse(text); if (!Array.isArray(rows)) throw 0; } catch { { toast.error("Paste a valid JSON array"); return; } }
     const bad = rows.findIndex((r) => !r.question || !Array.isArray(r.options) || !r.answer);
-    if (bad >= 0) return toast.error(`Row ${bad + 1} is missing question, options or answer`);
+    if (bad >= 0) { toast.error(`Row ${bad + 1} is missing question, options or answer`); return; }
     const { error } = await supabase.from("questions").insert(rows.map((r) => ({
       exam, subject_id: subject, source, status: "draft", question: String(r.question), answer: String(r.answer).toUpperCase(),
       year: r.year ? Number(r.year) : null, explanation: r.explanation ?? null,
       options: r.options.map((o: any, i: number) => typeof o === "string" ? { key: "ABCDE"[i], text: o } : o),
     })));
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(`Imported ${rows.length} questions as drafts. Review and publish them in Questions.`);
     setText("");
   }

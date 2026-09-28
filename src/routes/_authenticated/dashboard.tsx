@@ -30,7 +30,7 @@ function Dashboard() {
     const v = bySubject.get(k) ?? { sum: 0, n: 0 };
     v.sum += (s.score / s.total) * 100; v.n++; bySubject.set(k, v);
   });
-  const name = (user?.user_metadata?.full_name as string | undefined)?.split(" ")[0] ?? "there";
+  const name = (user?.user_metadata?.["full_name"] as string | undefined)?.split(" ")[0] ?? "there";
 
   return (
     <div className="mx-auto max-w-5xl p-4 md:p-8">

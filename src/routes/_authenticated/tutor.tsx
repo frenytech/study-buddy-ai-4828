@@ -44,7 +44,7 @@ function Tutor() {
     let cid = active;
     if (!cid) {
       const { data, error } = await supabase.from("tutor_conversations").insert({ user_id: user.id, title: text.slice(0, 60) }).select("id").single();
-      if (error) return toast.error(error.message);
+      if (error) { toast.error(error.message); return; }
       cid = data.id; setActive(cid); qc.invalidateQueries({ queryKey: ["convos"] });
     }
     const history: Msg[] = [...messages, { role: "user", content: text }];

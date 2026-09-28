@@ -34,11 +34,11 @@ function CbtSetup() {
   const list = (subjects ?? []).filter((s) => s.exam === exam);
 
   async function start() {
-    if (!subject) return toast.error("Pick a subject");
+    if (!subject) { toast.error("Pick a subject"); return; }
     setBusy(true);
     const { data, error } = await supabase.rpc("start_cbt", { _subject_id: subject, _count: Number(count), _minutes: Number(minutes) });
     setBusy(false);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     navigate({ to: "/cbt/$sessionId", params: { sessionId: data as string } });
   }
 

@@ -58,7 +58,7 @@ function CbtEngine() {
     if (submitted.current) return;
     submitted.current = true;
     const { error } = await supabase.rpc("submit_cbt", { _session_id: sessionId, _answers: answers });
-    if (error) { submitted.current = false; return toast.error(error.message); }
+    if (error) { submitted.current = false; { toast.error(error.message); return; } }
     localStorage.removeItem(`cbt:${sessionId}`);
     navigate({ to: "/results/$sessionId", params: { sessionId } });
   }
@@ -69,6 +69,7 @@ function CbtEngine() {
 
   const qs = data.questions;
   const q = qs[idx];
+  if (!q) return <div className="p-8"><p>This test has no questions.</p><Link to="/cbt" className="text-primary">Back</Link></div>;
   const answered = Object.keys(answers).filter((k) => qs.some((x) => x.id === k)).length;
   const mm = String(Math.floor(left / 60)).padStart(2, "0");
   const ss = String(left % 60).padStart(2, "0");

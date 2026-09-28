@@ -1,7 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
-const url = () => import.meta.env.VITE_SUPABASE_URL as string;
-const anon = () => import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+const url = () => import.meta.env["VITE_SUPABASE_URL"] as string;
+const anon = () => import.meta.env["VITE_SUPABASE_ANON_KEY"] as string;
 
 /** Verifies the bearer token and returns a user-scoped client (RLS applies). */
 export async function getRequestUser(request: Request) {
