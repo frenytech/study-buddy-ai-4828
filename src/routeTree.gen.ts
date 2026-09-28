@@ -13,7 +13,6 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AiTutorRouteImport } from './routes/ai-tutor'
 import { Route as AuthRouteImport } from './routes/auth'
-import { Route as CbtRouteImport } from './routes/cbt'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as JambRouteImport } from './routes/jamb'
 import { Route as PricingRouteImport } from './routes/pricing'
@@ -50,11 +49,6 @@ const AiTutorRoute = AiTutorRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CbtRoute = CbtRouteImport.update({
-  id: '/cbt',
-  path: '/cbt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeaturesRoute = FeaturesRouteImport.update({
@@ -157,7 +151,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ai-tutor': typeof AiTutorRoute
   '/auth': typeof AuthRoute
-  '/cbt': typeof CbtRoute
   '/features': typeof FeaturesRoute
   '/jamb': typeof JambRoute
   '/pricing': typeof PricingRoute
@@ -181,7 +174,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ai-tutor': typeof AiTutorRoute
   '/auth': typeof AuthRoute
-  '/cbt': typeof AuthenticatedCbtIndexRoute
   '/features': typeof FeaturesRoute
   '/jamb': typeof JambRoute
   '/pricing': typeof PricingRoute
@@ -199,6 +191,7 @@ export interface FileRoutesByTo {
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
   '/billing': typeof AuthenticatedBillingIndexRoute
+  '/cbt': typeof AuthenticatedCbtIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -206,7 +199,6 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/ai-tutor': typeof AiTutorRoute
   '/auth': typeof AuthRoute
-  '/cbt': typeof CbtRoute
   '/features': typeof FeaturesRoute
   '/jamb': typeof JambRoute
   '/pricing': typeof PricingRoute
@@ -232,7 +224,6 @@ export interface FileRouteTypes {
     | '/'
     | '/ai-tutor'
     | '/auth'
-    | '/cbt'
     | '/features'
     | '/jamb'
     | '/pricing'
@@ -256,7 +247,6 @@ export interface FileRouteTypes {
     | '/'
     | '/ai-tutor'
     | '/auth'
-    | '/cbt'
     | '/features'
     | '/jamb'
     | '/pricing'
@@ -274,13 +264,13 @@ export interface FileRouteTypes {
     | '/api/paystack/verify'
     | '/api/public/paystack-webhook'
     | '/billing'
+    | '/cbt'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/ai-tutor'
     | '/auth'
-    | '/cbt'
     | '/features'
     | '/jamb'
     | '/pricing'
@@ -306,7 +296,6 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AiTutorRoute: typeof AiTutorRoute
   AuthRoute: typeof AuthRoute
-  CbtRoute: typeof CbtRoute
   FeaturesRoute: typeof FeaturesRoute
   JambRoute: typeof JambRoute
   PricingRoute: typeof PricingRoute
@@ -346,13 +335,6 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cbt': {
-      id: '/cbt'
-      path: '/cbt'
-      fullPath: '/cbt'
-      preLoaderRoute: typeof CbtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/features': {
@@ -516,7 +498,6 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AiTutorRoute: AiTutorRoute,
   AuthRoute: AuthRoute,
-  CbtRoute: CbtRoute,
   FeaturesRoute: FeaturesRoute,
   JambRoute: JambRoute,
   PricingRoute: PricingRoute,
