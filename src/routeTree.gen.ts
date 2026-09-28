@@ -27,7 +27,10 @@ import { Route as AuthenticatedBillingIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedBillingCallbackRouteImport } from './routes/_authenticated/billing.callback'
 import { Route as AuthenticatedCbtIndexRouteImport } from './routes/_authenticated/cbt.index'
 import { Route as AuthenticatedCbtSessionIdRouteImport } from './routes/_authenticated/cbt.$sessionId'
+import { Route as AuthenticatedMaterialsIndexRouteImport } from './routes/_authenticated/materials.index'
+import { Route as AuthenticatedMaterialsMaterialIdRouteImport } from './routes/_authenticated/materials.$materialId'
 import { Route as AuthenticatedResultsSessionIdRouteImport } from './routes/_authenticated/results.$sessionId'
+import { Route as ApiMaterialsGenerateRouteImport } from './routes/api/materials/generate'
 import { Route as ApiPaystackInitRouteImport } from './routes/api/paystack/init'
 import { Route as ApiPaystackVerifyRouteImport } from './routes/api/paystack/verify'
 import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack-webhook'
@@ -124,12 +127,29 @@ const AuthenticatedCbtSessionIdRoute =
     path: '/cbt/$sessionId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedMaterialsIndexRoute =
+  AuthenticatedMaterialsIndexRouteImport.update({
+    id: '/materials/',
+    path: '/materials/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedMaterialsMaterialIdRoute =
+  AuthenticatedMaterialsMaterialIdRouteImport.update({
+    id: '/materials/$materialId',
+    path: '/materials/$materialId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedResultsSessionIdRoute =
   AuthenticatedResultsSessionIdRouteImport.update({
     id: '/results/$sessionId',
     path: '/results/$sessionId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiMaterialsGenerateRoute = ApiMaterialsGenerateRouteImport.update({
+  id: '/api/materials/generate',
+  path: '/api/materials/generate',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPaystackInitRoute = ApiPaystackInitRouteImport.update({
   id: '/api/paystack/init',
   path: '/api/paystack/init',
@@ -163,12 +183,15 @@ export interface FileRoutesByFullPath {
   '/api/tutor': typeof ApiTutorRoute
   '/billing/callback': typeof AuthenticatedBillingCallbackRoute
   '/cbt/$sessionId': typeof AuthenticatedCbtSessionIdRoute
+  '/materials/$materialId': typeof AuthenticatedMaterialsMaterialIdRoute
   '/results/$sessionId': typeof AuthenticatedResultsSessionIdRoute
+  '/api/materials/generate': typeof ApiMaterialsGenerateRoute
   '/api/paystack/init': typeof ApiPaystackInitRoute
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
   '/billing/': typeof AuthenticatedBillingIndexRoute
   '/cbt/': typeof AuthenticatedCbtIndexRoute
+  '/materials/': typeof AuthenticatedMaterialsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -186,12 +209,15 @@ export interface FileRoutesByTo {
   '/api/tutor': typeof ApiTutorRoute
   '/billing/callback': typeof AuthenticatedBillingCallbackRoute
   '/cbt/$sessionId': typeof AuthenticatedCbtSessionIdRoute
+  '/materials/$materialId': typeof AuthenticatedMaterialsMaterialIdRoute
   '/results/$sessionId': typeof AuthenticatedResultsSessionIdRoute
+  '/api/materials/generate': typeof ApiMaterialsGenerateRoute
   '/api/paystack/init': typeof ApiPaystackInitRoute
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
   '/billing': typeof AuthenticatedBillingIndexRoute
   '/cbt': typeof AuthenticatedCbtIndexRoute
+  '/materials': typeof AuthenticatedMaterialsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -211,12 +237,15 @@ export interface FileRoutesById {
   '/api/tutor': typeof ApiTutorRoute
   '/_authenticated/billing/callback': typeof AuthenticatedBillingCallbackRoute
   '/_authenticated/cbt/$sessionId': typeof AuthenticatedCbtSessionIdRoute
+  '/_authenticated/materials/$materialId': typeof AuthenticatedMaterialsMaterialIdRoute
   '/_authenticated/results/$sessionId': typeof AuthenticatedResultsSessionIdRoute
+  '/api/materials/generate': typeof ApiMaterialsGenerateRoute
   '/api/paystack/init': typeof ApiPaystackInitRoute
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
   '/_authenticated/billing/': typeof AuthenticatedBillingIndexRoute
   '/_authenticated/cbt/': typeof AuthenticatedCbtIndexRoute
+  '/_authenticated/materials/': typeof AuthenticatedMaterialsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -236,12 +265,15 @@ export interface FileRouteTypes {
     | '/api/tutor'
     | '/billing/callback'
     | '/cbt/$sessionId'
+    | '/materials/$materialId'
     | '/results/$sessionId'
+    | '/api/materials/generate'
     | '/api/paystack/init'
     | '/api/paystack/verify'
     | '/api/public/paystack-webhook'
     | '/billing/'
     | '/cbt/'
+    | '/materials/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -259,12 +291,15 @@ export interface FileRouteTypes {
     | '/api/tutor'
     | '/billing/callback'
     | '/cbt/$sessionId'
+    | '/materials/$materialId'
     | '/results/$sessionId'
+    | '/api/materials/generate'
     | '/api/paystack/init'
     | '/api/paystack/verify'
     | '/api/public/paystack-webhook'
     | '/billing'
     | '/cbt'
+    | '/materials'
   id:
     | '__root__'
     | '/'
@@ -283,12 +318,15 @@ export interface FileRouteTypes {
     | '/api/tutor'
     | '/_authenticated/billing/callback'
     | '/_authenticated/cbt/$sessionId'
+    | '/_authenticated/materials/$materialId'
     | '/_authenticated/results/$sessionId'
+    | '/api/materials/generate'
     | '/api/paystack/init'
     | '/api/paystack/verify'
     | '/api/public/paystack-webhook'
     | '/_authenticated/billing/'
     | '/_authenticated/cbt/'
+    | '/_authenticated/materials/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -302,6 +340,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   WaecRoute: typeof WaecRoute
   ApiTutorRoute: typeof ApiTutorRoute
+  ApiMaterialsGenerateRoute: typeof ApiMaterialsGenerateRoute
   ApiPaystackInitRoute: typeof ApiPaystackInitRoute
   ApiPaystackVerifyRoute: typeof ApiPaystackVerifyRoute
   ApiPublicPaystackWebhookRoute: typeof ApiPublicPaystackWebhookRoute
@@ -435,12 +474,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCbtSessionIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/materials/': {
+      id: '/_authenticated/materials/'
+      path: '/materials'
+      fullPath: '/materials/'
+      preLoaderRoute: typeof AuthenticatedMaterialsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/materials/$materialId': {
+      id: '/_authenticated/materials/$materialId'
+      path: '/materials/$materialId'
+      fullPath: '/materials/$materialId'
+      preLoaderRoute: typeof AuthenticatedMaterialsMaterialIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/results/$sessionId': {
       id: '/_authenticated/results/$sessionId'
       path: '/results/$sessionId'
       fullPath: '/results/$sessionId'
       preLoaderRoute: typeof AuthenticatedResultsSessionIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/materials/generate': {
+      id: '/api/materials/generate'
+      path: '/api/materials/generate'
+      fullPath: '/api/materials/generate'
+      preLoaderRoute: typeof ApiMaterialsGenerateRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/paystack/init': {
       id: '/api/paystack/init'
@@ -473,9 +533,11 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedTutorRoute: typeof AuthenticatedTutorRoute
   AuthenticatedBillingCallbackRoute: typeof AuthenticatedBillingCallbackRoute
   AuthenticatedCbtSessionIdRoute: typeof AuthenticatedCbtSessionIdRoute
+  AuthenticatedMaterialsMaterialIdRoute: typeof AuthenticatedMaterialsMaterialIdRoute
   AuthenticatedResultsSessionIdRoute: typeof AuthenticatedResultsSessionIdRoute
   AuthenticatedBillingIndexRoute: typeof AuthenticatedBillingIndexRoute
   AuthenticatedCbtIndexRoute: typeof AuthenticatedCbtIndexRoute
+  AuthenticatedMaterialsIndexRoute: typeof AuthenticatedMaterialsIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -485,9 +547,11 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedTutorRoute: AuthenticatedTutorRoute,
   AuthenticatedBillingCallbackRoute: AuthenticatedBillingCallbackRoute,
   AuthenticatedCbtSessionIdRoute: AuthenticatedCbtSessionIdRoute,
+  AuthenticatedMaterialsMaterialIdRoute: AuthenticatedMaterialsMaterialIdRoute,
   AuthenticatedResultsSessionIdRoute: AuthenticatedResultsSessionIdRoute,
   AuthenticatedBillingIndexRoute: AuthenticatedBillingIndexRoute,
   AuthenticatedCbtIndexRoute: AuthenticatedCbtIndexRoute,
+  AuthenticatedMaterialsIndexRoute: AuthenticatedMaterialsIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -504,6 +568,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   WaecRoute: WaecRoute,
   ApiTutorRoute: ApiTutorRoute,
+  ApiMaterialsGenerateRoute: ApiMaterialsGenerateRoute,
   ApiPaystackInitRoute: ApiPaystackInitRoute,
   ApiPaystackVerifyRoute: ApiPaystackVerifyRoute,
   ApiPublicPaystackWebhookRoute: ApiPublicPaystackWebhookRoute,
