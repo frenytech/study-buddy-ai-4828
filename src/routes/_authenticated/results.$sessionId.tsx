@@ -4,6 +4,7 @@ import { CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/lib/supabase";
+import { AiAnalysis } from "@/components/ai-analysis";
 
 export const Route = createFileRoute("/_authenticated/results/$sessionId")({
   head: () => ({ meta: [{ title: "Test results — StudyAI" }, { name: "robots", content: "noindex" }] }),
@@ -37,6 +38,7 @@ function Results() {
           <Button variant="outline" asChild><Link to="/tutor">Ask the Tutor</Link></Button>
         </div>
       </div>
+      <AiAnalysis sessionId={sessionId} analysis={s.ai_analysis ?? null} analyzedAt={s.ai_analysis_at ?? null} />
       <h2 className="mt-10 text-xl font-bold">Review</h2>
       <div className="mt-4 space-y-4">
         {review.map((q, i) => {
