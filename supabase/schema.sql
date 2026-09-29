@@ -164,7 +164,8 @@ begin
   return _score;
 end $$;
 
--- Review with answers, only after submission
+-- Review with answers, only after submission (redefined with topic further below)
+drop function if exists public.get_cbt_review(uuid);
 create or replace function public.get_cbt_review(_session_id uuid)
 returns table (id uuid, question text, options jsonb, answer text, explanation text, source text, year int)
 language sql stable security definer set search_path = public as $$
