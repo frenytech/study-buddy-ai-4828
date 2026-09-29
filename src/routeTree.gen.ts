@@ -31,6 +31,7 @@ import { Route as AuthenticatedMaterialsIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedMaterialsMaterialIdRouteImport } from './routes/_authenticated/materials.$materialId'
 import { Route as AuthenticatedResultsSessionIdRouteImport } from './routes/_authenticated/results.$sessionId'
 import { Route as ApiAdminGenerateQuestionsRouteImport } from './routes/api/admin/generate-questions'
+import { Route as ApiCbtAnalyzeRouteImport } from './routes/api/cbt/analyze'
 import { Route as ApiMaterialsGenerateRouteImport } from './routes/api/materials/generate'
 import { Route as ApiPaystackInitRouteImport } from './routes/api/paystack/init'
 import { Route as ApiPaystackVerifyRouteImport } from './routes/api/paystack/verify'
@@ -152,6 +153,11 @@ const ApiAdminGenerateQuestionsRoute =
     path: '/api/admin/generate-questions',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiCbtAnalyzeRoute = ApiCbtAnalyzeRouteImport.update({
+  id: '/api/cbt/analyze',
+  path: '/api/cbt/analyze',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiMaterialsGenerateRoute = ApiMaterialsGenerateRouteImport.update({
   id: '/api/materials/generate',
   path: '/api/materials/generate',
@@ -193,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/materials/$materialId': typeof AuthenticatedMaterialsMaterialIdRoute
   '/results/$sessionId': typeof AuthenticatedResultsSessionIdRoute
   '/api/admin/generate-questions': typeof ApiAdminGenerateQuestionsRoute
+  '/api/cbt/analyze': typeof ApiCbtAnalyzeRoute
   '/api/materials/generate': typeof ApiMaterialsGenerateRoute
   '/api/paystack/init': typeof ApiPaystackInitRoute
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
@@ -220,6 +227,7 @@ export interface FileRoutesByTo {
   '/materials/$materialId': typeof AuthenticatedMaterialsMaterialIdRoute
   '/results/$sessionId': typeof AuthenticatedResultsSessionIdRoute
   '/api/admin/generate-questions': typeof ApiAdminGenerateQuestionsRoute
+  '/api/cbt/analyze': typeof ApiCbtAnalyzeRoute
   '/api/materials/generate': typeof ApiMaterialsGenerateRoute
   '/api/paystack/init': typeof ApiPaystackInitRoute
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
@@ -249,6 +257,7 @@ export interface FileRoutesById {
   '/_authenticated/materials/$materialId': typeof AuthenticatedMaterialsMaterialIdRoute
   '/_authenticated/results/$sessionId': typeof AuthenticatedResultsSessionIdRoute
   '/api/admin/generate-questions': typeof ApiAdminGenerateQuestionsRoute
+  '/api/cbt/analyze': typeof ApiCbtAnalyzeRoute
   '/api/materials/generate': typeof ApiMaterialsGenerateRoute
   '/api/paystack/init': typeof ApiPaystackInitRoute
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
@@ -278,6 +287,7 @@ export interface FileRouteTypes {
     | '/materials/$materialId'
     | '/results/$sessionId'
     | '/api/admin/generate-questions'
+    | '/api/cbt/analyze'
     | '/api/materials/generate'
     | '/api/paystack/init'
     | '/api/paystack/verify'
@@ -305,6 +315,7 @@ export interface FileRouteTypes {
     | '/materials/$materialId'
     | '/results/$sessionId'
     | '/api/admin/generate-questions'
+    | '/api/cbt/analyze'
     | '/api/materials/generate'
     | '/api/paystack/init'
     | '/api/paystack/verify'
@@ -333,6 +344,7 @@ export interface FileRouteTypes {
     | '/_authenticated/materials/$materialId'
     | '/_authenticated/results/$sessionId'
     | '/api/admin/generate-questions'
+    | '/api/cbt/analyze'
     | '/api/materials/generate'
     | '/api/paystack/init'
     | '/api/paystack/verify'
@@ -354,6 +366,7 @@ export interface RootRouteChildren {
   WaecRoute: typeof WaecRoute
   ApiTutorRoute: typeof ApiTutorRoute
   ApiAdminGenerateQuestionsRoute: typeof ApiAdminGenerateQuestionsRoute
+  ApiCbtAnalyzeRoute: typeof ApiCbtAnalyzeRoute
   ApiMaterialsGenerateRoute: typeof ApiMaterialsGenerateRoute
   ApiPaystackInitRoute: typeof ApiPaystackInitRoute
   ApiPaystackVerifyRoute: typeof ApiPaystackVerifyRoute
@@ -516,6 +529,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminGenerateQuestionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cbt/analyze': {
+      id: '/api/cbt/analyze'
+      path: '/api/cbt/analyze'
+      fullPath: '/api/cbt/analyze'
+      preLoaderRoute: typeof ApiCbtAnalyzeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/materials/generate': {
       id: '/api/materials/generate'
       path: '/api/materials/generate'
@@ -590,6 +610,7 @@ const rootRouteChildren: RootRouteChildren = {
   WaecRoute: WaecRoute,
   ApiTutorRoute: ApiTutorRoute,
   ApiAdminGenerateQuestionsRoute: ApiAdminGenerateQuestionsRoute,
+  ApiCbtAnalyzeRoute: ApiCbtAnalyzeRoute,
   ApiMaterialsGenerateRoute: ApiMaterialsGenerateRoute,
   ApiPaystackInitRoute: ApiPaystackInitRoute,
   ApiPaystackVerifyRoute: ApiPaystackVerifyRoute,

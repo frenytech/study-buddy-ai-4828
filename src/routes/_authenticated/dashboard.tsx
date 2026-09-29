@@ -14,7 +14,7 @@ function Dashboard() {
   const { user, plan } = useAuth();
   const { data: sessions } = useQuery({
     queryKey: ["my-sessions"],
-    queryFn: async () => (await supabase.from("cbt_sessions").select("id, exam, score, total, submitted_at, subjects(name)")
+    queryFn: async () => (await supabase.from("cbt_sessions").select("id, exam, score, total, submitted_at, ai_analysis_at, subjects(name)")
       .not("submitted_at", "is", null).order("submitted_at", { ascending: false }).limit(20)).data ?? [],
   });
   const { data: usage } = useQuery({
@@ -70,7 +70,7 @@ function Dashboard() {
               <li key={s.id}>
                 <Link to="/results/$sessionId" params={{ sessionId: s.id }} className="flex justify-between py-2 text-sm hover:text-primary">
                   <span>{s.exam.toUpperCase()} · {s.subjects?.name}</span>
-                  <span className="font-medium">{s.score}/{s.total}</span>
+                  <span className="font-medium">{s.ai_analysis_at && <span className="mr-2 rounded-full bg-secondary px-2 py-0.5 text-xs text-primary">AI diagnosis</span>}{s.score}/{s.total}</span>
                 </Link>
               </li>
             ))}
