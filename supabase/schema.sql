@@ -403,3 +403,21 @@ alter table public.questions add column if not exists difficulty text check (dif
 alter table public.questions drop constraint if exists questions_status_check;
 alter table public.questions add constraint questions_status_check check (status in ('draft','pending_review','published'));
 create index if not exists questions_review on public.questions (status, created_at desc);
+
+-- ============ AI PERFORMANCE ANALYSIS ============
+-- Written only by the server (service role) after checking the attempt belongs to the student.
+alter table public.cbt_sessions add column if not exists ai_analysis jsonb;
+alter table public.cbt_sessions add column if not exists ai_analysis_at timestamptz;
+
+-- Review now also returns topic and difficulty.
+drop function if exists public.get_cbt_review(uuid);
+create function public.get_cbt_review(_session_id uuid)
+returns table (id uuid, question text, options jsonb, answer text, explanation text, source text, year int, topic text, difficulty text)
+language sql stable security definer set search_path = public as $$
+  select q.id, q.question, q.options, q.answer, q.explanation, q.source, q.year, q.topic, q.difficulty
+  from cbt_sessions s join lateral unnest(s.question_ids) with ordinality as u(qid, ord) on true
+  join questions q on q.id = u.qid
+  where s.id = _session_id and s.user_id = auth.uid() and s.submitted_at is not null
+  order by u.ord
+$$;
+grant execute on function public.get_cbt_review(uuid) to authenticated;
