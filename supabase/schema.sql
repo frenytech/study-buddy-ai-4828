@@ -396,3 +396,10 @@ create policy "materials upload own" on storage.objects for insert to authentica
 drop policy if exists "materials delete own" on storage.objects;
 create policy "materials delete own" on storage.objects for delete to authenticated
   using (bucket_id = 'materials' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- ============ AI QUESTION GENERATOR (review queue) ============
+alter table public.questions add column if not exists topic text;
+alter table public.questions add column if not exists difficulty text check (difficulty in ('easy','medium','hard'));
+alter table public.questions drop constraint if exists questions_status_check;
+alter table public.questions add constraint questions_status_check check (status in ('draft','pending_review','published'));
+create index if not exists questions_review on public.questions (status, created_at desc);
