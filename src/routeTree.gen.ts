@@ -30,6 +30,7 @@ import { Route as AuthenticatedCbtSessionIdRouteImport } from './routes/_authent
 import { Route as AuthenticatedMaterialsIndexRouteImport } from './routes/_authenticated/materials.index'
 import { Route as AuthenticatedMaterialsMaterialIdRouteImport } from './routes/_authenticated/materials.$materialId'
 import { Route as AuthenticatedResultsSessionIdRouteImport } from './routes/_authenticated/results.$sessionId'
+import { Route as ApiAdminGenerateQuestionsRouteImport } from './routes/api/admin/generate-questions'
 import { Route as ApiMaterialsGenerateRouteImport } from './routes/api/materials/generate'
 import { Route as ApiPaystackInitRouteImport } from './routes/api/paystack/init'
 import { Route as ApiPaystackVerifyRouteImport } from './routes/api/paystack/verify'
@@ -145,6 +146,12 @@ const AuthenticatedResultsSessionIdRoute =
     path: '/results/$sessionId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiAdminGenerateQuestionsRoute =
+  ApiAdminGenerateQuestionsRouteImport.update({
+    id: '/api/admin/generate-questions',
+    path: '/api/admin/generate-questions',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiMaterialsGenerateRoute = ApiMaterialsGenerateRouteImport.update({
   id: '/api/materials/generate',
   path: '/api/materials/generate',
@@ -185,6 +192,7 @@ export interface FileRoutesByFullPath {
   '/cbt/$sessionId': typeof AuthenticatedCbtSessionIdRoute
   '/materials/$materialId': typeof AuthenticatedMaterialsMaterialIdRoute
   '/results/$sessionId': typeof AuthenticatedResultsSessionIdRoute
+  '/api/admin/generate-questions': typeof ApiAdminGenerateQuestionsRoute
   '/api/materials/generate': typeof ApiMaterialsGenerateRoute
   '/api/paystack/init': typeof ApiPaystackInitRoute
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
@@ -211,6 +219,7 @@ export interface FileRoutesByTo {
   '/cbt/$sessionId': typeof AuthenticatedCbtSessionIdRoute
   '/materials/$materialId': typeof AuthenticatedMaterialsMaterialIdRoute
   '/results/$sessionId': typeof AuthenticatedResultsSessionIdRoute
+  '/api/admin/generate-questions': typeof ApiAdminGenerateQuestionsRoute
   '/api/materials/generate': typeof ApiMaterialsGenerateRoute
   '/api/paystack/init': typeof ApiPaystackInitRoute
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
@@ -239,6 +248,7 @@ export interface FileRoutesById {
   '/_authenticated/cbt/$sessionId': typeof AuthenticatedCbtSessionIdRoute
   '/_authenticated/materials/$materialId': typeof AuthenticatedMaterialsMaterialIdRoute
   '/_authenticated/results/$sessionId': typeof AuthenticatedResultsSessionIdRoute
+  '/api/admin/generate-questions': typeof ApiAdminGenerateQuestionsRoute
   '/api/materials/generate': typeof ApiMaterialsGenerateRoute
   '/api/paystack/init': typeof ApiPaystackInitRoute
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
@@ -267,6 +277,7 @@ export interface FileRouteTypes {
     | '/cbt/$sessionId'
     | '/materials/$materialId'
     | '/results/$sessionId'
+    | '/api/admin/generate-questions'
     | '/api/materials/generate'
     | '/api/paystack/init'
     | '/api/paystack/verify'
@@ -293,6 +304,7 @@ export interface FileRouteTypes {
     | '/cbt/$sessionId'
     | '/materials/$materialId'
     | '/results/$sessionId'
+    | '/api/admin/generate-questions'
     | '/api/materials/generate'
     | '/api/paystack/init'
     | '/api/paystack/verify'
@@ -320,6 +332,7 @@ export interface FileRouteTypes {
     | '/_authenticated/cbt/$sessionId'
     | '/_authenticated/materials/$materialId'
     | '/_authenticated/results/$sessionId'
+    | '/api/admin/generate-questions'
     | '/api/materials/generate'
     | '/api/paystack/init'
     | '/api/paystack/verify'
@@ -340,6 +353,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   WaecRoute: typeof WaecRoute
   ApiTutorRoute: typeof ApiTutorRoute
+  ApiAdminGenerateQuestionsRoute: typeof ApiAdminGenerateQuestionsRoute
   ApiMaterialsGenerateRoute: typeof ApiMaterialsGenerateRoute
   ApiPaystackInitRoute: typeof ApiPaystackInitRoute
   ApiPaystackVerifyRoute: typeof ApiPaystackVerifyRoute
@@ -495,6 +509,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedResultsSessionIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/admin/generate-questions': {
+      id: '/api/admin/generate-questions'
+      path: '/api/admin/generate-questions'
+      fullPath: '/api/admin/generate-questions'
+      preLoaderRoute: typeof ApiAdminGenerateQuestionsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/materials/generate': {
       id: '/api/materials/generate'
       path: '/api/materials/generate'
@@ -568,6 +589,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   WaecRoute: WaecRoute,
   ApiTutorRoute: ApiTutorRoute,
+  ApiAdminGenerateQuestionsRoute: ApiAdminGenerateQuestionsRoute,
   ApiMaterialsGenerateRoute: ApiMaterialsGenerateRoute,
   ApiPaystackInitRoute: ApiPaystackInitRoute,
   ApiPaystackVerifyRoute: ApiPaystackVerifyRoute,

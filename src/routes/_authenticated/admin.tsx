@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { supabase } from "@/lib/supabase";
+import { supabase, authHeader } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/_authenticated/admin")({
@@ -27,12 +27,14 @@ function Admin() {
       <Tabs defaultValue="overview" className="mt-6">
         <TabsList className="flex-wrap">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="ai">AI Question Generator</TabsTrigger>
           <TabsTrigger value="questions">Questions</TabsTrigger>
           <TabsTrigger value="import">Bulk upload</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
         </TabsList>
         <TabsContent value="overview"><Overview /></TabsContent>
+        <TabsContent value="ai"><AiGenerator /></TabsContent>
         <TabsContent value="questions"><Questions /></TabsContent>
         <TabsContent value="import"><BulkImport /></TabsContent>
         <TabsContent value="users"><Users /></TabsContent>
@@ -69,6 +71,118 @@ function Overview() {
 }
 
 const empty = { exam: "jamb", subject_id: "", year: "", question: "", A: "", B: "", C: "", D: "", answer: "A", explanation: "", source: "past" };
+
+function AiGenerator() {
+  const qc = useQueryClient();
+  const { data: subjects } = useSubjects();
+  const [exam, setExam] = useState("jamb");
+  const [subject, setSubject] = useState("");
+  const [topic, setTopic] = useState("");
+  const [difficulty, setDifficulty] = useState("medium");
+  const [count, setCount] = useState("10");
+  const [busy, setBusy] = useState(false);
+  const { data: queue } = useQuery({
+    queryKey: ["admin-review-queue"],
+    queryFn: async () => (await supabase.from("questions").select("id,exam,question,options,answer,explanation,topic,difficulty,subjects(name)").eq("status", "pending_review").order("created_at", { ascending: false }).limit(200)).data ?? [],
+  });
+  const refresh = () => { qc.invalidateQueries({ queryKey: ["admin-review-queue"] }); qc.invalidateQueries({ queryKey: ["admin-questions"] }); };
+
+  async function generate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!subject) { toast.error("Pick a subject"); return; }
+    setBusy(true);
+    try {
+      const res = await fetch("/api/admin/generate-questions", {
+        method: "POST", headers: { "Content-Type": "application/json", ...(await authHeader()) },
+        body: JSON.stringify({ exam, subjectId: subject, topic, difficulty, count: Number(count) }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) { toast.error(body.error ?? "Generation failed"); return; }
+      toast.success(`${body.count} questions added to the review queue`);
+      refresh();
+    } finally { setBusy(false); }
+  }
+  async function publishAll() {
+    if (!queue?.length || !confirm(`Publish all ${queue.length} questions in the queue?`)) return;
+    const { error } = await supabase.from("questions").update({ status: "published" }).in("id", queue.map((q: any) => q.id));
+    if (error) toast.error(error.message); else toast.success("Published");
+    refresh();
+  }
+
+  return (
+    <div className="mt-4 grid gap-6 lg:grid-cols-[340px_1fr]">
+      <form onSubmit={generate} className="h-fit space-y-3 rounded-2xl border border-border bg-card p-5 shadow-soft">
+        <h2 className="font-semibold">Generate questions</h2>
+        <div><Label>Exam</Label><Select value={exam} onValueChange={(v) => { setExam(v); setSubject(""); }}><SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectContent><SelectItem value="jamb">JAMB</SelectItem><SelectItem value="waec">WAEC</SelectItem></SelectContent></Select></div>
+        <div><Label>Subject</Label><Select value={subject} onValueChange={setSubject}><SelectTrigger><SelectValue placeholder="Choose subject" /></SelectTrigger>
+          <SelectContent>{(subjects ?? []).filter((s) => s.exam === exam).map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}</SelectContent></Select></div>
+        <div><Label>Topic</Label><Input required minLength={2} placeholder="e.g. Quadratic equations" value={topic} onChange={(e) => setTopic(e.target.value)} /></div>
+        <div className="grid grid-cols-2 gap-2">
+          <div><Label>Difficulty</Label><Select value={difficulty} onValueChange={setDifficulty}><SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent><SelectItem value="easy">Easy</SelectItem><SelectItem value="medium">Medium</SelectItem><SelectItem value="hard">Hard</SelectItem></SelectContent></Select></div>
+          <div><Label>How many</Label><Input type="number" min={1} max={30} value={count} onChange={(e) => setCount(e.target.value)} /></div>
+        </div>
+        <Button className="w-full" disabled={busy}>{busy ? "Generating… (up to a minute)" : "Generate"}</Button>
+        <p className="text-xs text-muted-foreground">Generated questions wait in the review queue. Students only see them after you publish.</p>
+      </form>
+      <div>
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="font-semibold">Review queue ({queue?.length ?? 0})</h2>
+          {!!queue?.length && <Button size="sm" variant="outline" onClick={publishAll}>Publish all</Button>}
+        </div>
+        {!queue?.length && <p className="mt-4 text-sm text-muted-foreground">Nothing to review. Generate some questions to get started.</p>}
+        <div className="mt-4 space-y-3">{(queue ?? []).map((q: any) => <ReviewCard key={q.id} q={q} onDone={refresh} />)}</div>
+      </div>
+    </div>
+  );
+}
+
+function ReviewCard({ q, onDone }: { q: any; onDone: () => void }) {
+  const [question, setQuestion] = useState<string>(q.question);
+  const [opts, setOpts] = useState<{ key: string; text: string }[]>(q.options);
+  const [answer, setAnswer] = useState<string>(q.answer);
+  const [explanation, setExplanation] = useState<string>(q.explanation ?? "");
+  const [saving, setSaving] = useState(false);
+  async function save(status: "pending_review" | "published") {
+    if (!question.trim() || opts.some((o) => !o.text.trim())) { toast.error("Question and all options need text"); return; }
+    setSaving(true);
+    const { error } = await supabase.from("questions").update({ question: question.trim(), options: opts.map((o) => ({ ...o, text: o.text.trim() })), answer, explanation: explanation.trim() || null, status }).eq("id", q.id);
+    setSaving(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success(status === "published" ? "Published to the question bank" : "Changes saved");
+    onDone();
+  }
+  async function discard() {
+    if (!confirm("Discard this question?")) return;
+    const { error } = await supabase.from("questions").delete().eq("id", q.id);
+    if (error) toast.error(error.message); else onDone();
+  }
+  return (
+    <div className="space-y-2 rounded-xl border border-border bg-card p-4">
+      <div className="flex flex-wrap gap-2 text-xs">
+        <Badge variant="outline">{q.exam.toUpperCase()} · {q.subjects?.name}</Badge>
+        {q.topic && <Badge variant="secondary">{q.topic}</Badge>}
+        {q.difficulty && <Badge variant="outline" className="capitalize">{q.difficulty}</Badge>}
+      </div>
+      <Textarea value={question} onChange={(e) => setQuestion(e.target.value)} />
+      {opts.map((o, i) => (
+        <div key={o.key} className="flex items-center gap-2">
+          <button type="button" onClick={() => setAnswer(o.key)} aria-label={`Mark ${o.key} correct`}
+            className={`h-8 w-8 shrink-0 rounded-full border text-sm font-semibold ${answer === o.key ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}>{o.key}</button>
+          <Input value={o.text} onChange={(e) => setOpts(opts.map((x, j) => (j === i ? { ...x, text: e.target.value } : x)))} />
+        </div>
+      ))}
+      <p className="text-xs text-muted-foreground">Tap a letter to set the correct answer (currently {answer}).</p>
+      <Textarea rows={4} placeholder="Explanation" value={explanation} onChange={(e) => setExplanation(e.target.value)} />
+      <div className="flex flex-wrap gap-2">
+        <Button size="sm" disabled={saving} onClick={() => save("published")}>Approve & publish</Button>
+        <Button size="sm" variant="outline" disabled={saving} onClick={() => save("pending_review")}>Save edits</Button>
+        <Button size="sm" variant="ghost" disabled={saving} onClick={discard}>Discard</Button>
+      </div>
+    </div>
+  );
+}
 
 function Questions() {
   const qc = useQueryClient();
