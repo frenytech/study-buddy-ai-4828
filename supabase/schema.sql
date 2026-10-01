@@ -422,3 +422,88 @@ language sql stable security definer set search_path = public as $$
   order by u.ord
 $$;
 grant execute on function public.get_cbt_review(uuid) to authenticated;
+
+-- ============ COURSES & VIDEO LESSONS ============
+create table if not exists public.courses (
+  id uuid primary key default gen_random_uuid(),
+  exam public.exam_type not null,
+  subject_id uuid not null references public.subjects(id) on delete cascade,
+  title text not null,
+  description text,
+  syllabus text,                       -- markdown-style syllabus breakdown
+  cover_url text,
+  status text not null default 'draft' check (status in ('draft','published')),
+  created_by uuid references auth.users(id),
+  created_at timestamptz not null default now()
+);
+create table if not exists public.course_modules (
+  id uuid primary key default gen_random_uuid(),
+  course_id uuid not null references public.courses(id) on delete cascade,
+  title text not null,
+  position int not null default 0
+);
+create table if not exists public.lessons (
+  id uuid primary key default gen_random_uuid(),
+  course_id uuid not null references public.courses(id) on delete cascade,
+  module_id uuid not null references public.course_modules(id) on delete cascade,
+  title text not null,
+  video_url text,
+  notes text,
+  takeaways text[] not null default '{}',
+  resources jsonb not null default '[]'::jsonb,   -- [{"label":"...","url":"..."}]
+  duration_minutes int,
+  position int not null default 0
+);
+create table if not exists public.lesson_progress (
+  user_id uuid not null references auth.users(id) on delete cascade,
+  lesson_id uuid not null references public.lessons(id) on delete cascade,
+  course_id uuid not null references public.courses(id) on delete cascade,
+  completed boolean not null default false,
+  last_position_seconds int not null default 0,
+  updated_at timestamptz not null default now(),
+  primary key (user_id, lesson_id)
+);
+create index if not exists course_modules_course on public.course_modules (course_id, position);
+create index if not exists lessons_module on public.lessons (module_id, position);
+create index if not exists lesson_progress_course on public.lesson_progress (user_id, course_id);
+
+grant select, insert, update, delete on public.courses, public.course_modules, public.lessons, public.lesson_progress to authenticated;
+grant all on public.courses, public.course_modules, public.lessons, public.lesson_progress to service_role;
+alter table public.courses enable row level security;
+alter table public.course_modules enable row level security;
+alter table public.lessons enable row level security;
+alter table public.lesson_progress enable row level security;
+
+drop policy if exists "courses read" on public.courses;
+create policy "courses read" on public.courses for select to authenticated
+  using (status = 'published' or public.has_role(auth.uid(),'admin'));
+drop policy if exists "courses admin" on public.courses;
+create policy "courses admin" on public.courses for all to authenticated
+  using (public.has_role(auth.uid(),'admin')) with check (public.has_role(auth.uid(),'admin'));
+
+drop policy if exists "modules read" on public.course_modules;
+create policy "modules read" on public.course_modules for select to authenticated
+  using (exists (select 1 from public.courses c where c.id = course_id and (c.status = 'published' or public.has_role(auth.uid(),'admin'))));
+drop policy if exists "modules admin" on public.course_modules;
+create policy "modules admin" on public.course_modules for all to authenticated
+  using (public.has_role(auth.uid(),'admin')) with check (public.has_role(auth.uid(),'admin'));
+
+drop policy if exists "lessons read" on public.lessons;
+create policy "lessons read" on public.lessons for select to authenticated
+  using (exists (select 1 from public.courses c where c.id = course_id and (c.status = 'published' or public.has_role(auth.uid(),'admin'))));
+drop policy if exists "lessons admin" on public.lessons;
+create policy "lessons admin" on public.lessons for all to authenticated
+  using (public.has_role(auth.uid(),'admin')) with check (public.has_role(auth.uid(),'admin'));
+
+drop policy if exists "progress own read" on public.lesson_progress;
+create policy "progress own read" on public.lesson_progress for select to authenticated
+  using (user_id = auth.uid() or public.has_role(auth.uid(),'admin'));
+drop policy if exists "progress own insert" on public.lesson_progress;
+create policy "progress own insert" on public.lesson_progress for insert to authenticated
+  with check (user_id = auth.uid() and exists (select 1 from public.lessons l where l.id = lesson_id and l.course_id = course_id));
+drop policy if exists "progress own update" on public.lesson_progress;
+create policy "progress own update" on public.lesson_progress for update to authenticated
+  using (user_id = auth.uid()) with check (user_id = auth.uid());
+drop policy if exists "progress own delete" on public.lesson_progress;
+create policy "progress own delete" on public.lesson_progress for delete to authenticated
+  using (user_id = auth.uid());
