@@ -329,7 +329,7 @@ function Users() {
     },
   });
   async function toggle(id: string, admin: boolean) {
-    if (id === me?.id) return toast.error("You can't change your own role.");
+    if (id === me?.id) { toast.error("You can't change your own role."); return; }
     const { error } = admin
       ? await supabase.from("user_roles").delete().eq("user_id", id).eq("role", "admin")
       : await supabase.from("user_roles").insert({ user_id: id, role: "admin" });

@@ -49,23 +49,23 @@ function Profile() {
       full_name: f.full_name, academic_level: f.academic_level, department: f.department, exam_target: f.exam_target,
       preferences: { ...(data?.profile?.preferences ?? {}), reminders: f.reminders },
     }).eq("id", user!.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Profile saved");
     qc.invalidateQueries({ queryKey: ["profile"] });
   }
   async function avatar(file: File) {
-    if (file.size > 2 * 1024 * 1024) return toast.error("Please choose an image under 2 MB.");
+    if (file.size > 2 * 1024 * 1024) { toast.error("Please choose an image under 2 MB."); return; }
     const path = `${user!.id}/avatar-${Date.now()}.${file.name.split(".").pop()}`;
     const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     const url = supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
     await supabase.from("profiles").update({ avatar_url: url }).eq("id", user!.id);
     qc.invalidateQueries({ queryKey: ["profile"] });
   }
   async function changePw() {
-    if (pw.length < 8) return toast.error("Use at least 8 characters.");
+    if (pw.length < 8) { toast.error("Use at least 8 characters."); return; }
     const { error } = await supabase.auth.updateUser({ password: pw });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setPw(""); toast.success("Password updated");
   }
   async function logout() {
