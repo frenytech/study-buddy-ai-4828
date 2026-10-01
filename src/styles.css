@@ -158,7 +158,7 @@
 
 /* 3D learning universe */
 .universe { position: relative; margin: 0 auto; width: min(440px, 90vw); aspect-ratio: 1; perspective: 900px; }
-.universe-tilt { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateX(58deg); }
+.universe-tilt { position: absolute; inset: 9%; transform-style: preserve-3d; transform: rotateX(58deg); }
 .universe-ring { position: absolute; border-radius: 9999px; border: 1px dashed var(--border); }
 .universe-ring-1 { inset: 4%; }
 .universe-ring-2 { inset: 22%; opacity: .6; }
