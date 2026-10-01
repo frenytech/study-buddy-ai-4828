@@ -72,8 +72,21 @@ Create a key at openrouter.ai and store it as `OPENROUTER_API_KEY`.
 - Webhook URL: `https://<your-domain>/api/paystack/webhook`.
 - Subscriptions are written only server-side after Paystack verification.
 
-## Vercel / production deployment
-Set all environment variables in the hosting dashboard, set the Supabase site URL to the production domain, and update the Paystack webhook and Google redirect URLs.
+## Deploying to Render
+1. Push the code to GitHub.
+2. Render → **New → Blueprint** → pick the repo. `render.yaml` sets everything up.
+3. Fill in the secret values Render asks for: `VITE_SUPABASE_ANON_KEY`, `STUDYAI_SERVICE_ROLE_KEY`, `OPENROUTER_API_KEY`, `PAYSTACK_SECRET_KEY`.
+4. Build: `NITRO_PRESET=node-server bun run build` · Start: `node .output/server/index.mjs`.
+5. After the first deploy, copy your `https://<name>.onrender.com` URL and:
+   - Supabase → Authentication → URL Configuration: set Site URL to it and add `https://<name>.onrender.com/**` to Redirect URLs.
+   - Paystack → Settings → Webhooks: `https://<name>.onrender.com/api/public/paystack-webhook`.
+   - Paystack callback URL: `https://<name>.onrender.com/billing/callback`.
+6. If you change a `VITE_` value, redeploy (they're baked in at build time).
+
+Free Render instances sleep when idle; the first visit after a while can take ~30 seconds.
+
+## Email (optional: Brevo)
+Supabase sends sign-up and password-reset emails itself, but its built-in sender is limited to a few emails per hour. For real users, add Brevo SMTP in Supabase → Authentication → Emails → SMTP Settings (host `smtp-relay.brevo.com`, port 587, your Brevo login and SMTP key). No Brevo key is needed in the app.
 
 ## Security
 - Service role key and secret keys stay server-side.

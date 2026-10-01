@@ -16,3 +16,4 @@
 - CBT answers never reach students before submission: questions table is admin-only; students use `start_cbt`/`get_cbt_questions`/`submit_cbt`/`get_cbt_review` security-definer RPCs.
 - AI Tutor uses OpenRouter (user requirement) with daily limits enforced by `consume_ai_credit` RPC.
 - Paystack writes subscriptions only server-side with STUDYAI_SERVICE_ROLE_KEY after verifying the transaction with Paystack.
+- Render deploys build with NITRO_PRESET=node-server and run .output/server/index.mjs (render.yaml) — Lovable build stays Cloudflare.
