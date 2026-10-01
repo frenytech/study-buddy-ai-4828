@@ -3,6 +3,7 @@ import { ArrowRight, Timer, ShieldCheck, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PublicPage } from "@/components/site-layout";
 import { FeatureGrid, PricingCards } from "@/components/marketing";
+import { LearningUniverse } from "@/components/learning-universe";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -64,6 +65,15 @@ function Home() {
           </div>
         </div>
       </section>
+
+      <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 md:grid-cols-2">
+        <div>
+          <h2 className="text-3xl font-bold">Your learning universe</h2>
+          <p className="mt-3 text-muted-foreground">Courses, AI help, quizzes, flashcards and progress tracking all work together around one goal: helping you pass JAMB and WAEC.</p>
+        </div>
+        <LearningUniverse />
+      </section>
+
 
       <section className="mx-auto max-w-6xl px-4 py-16">
         <h2 className="text-3xl font-bold">Everything you need to pass</h2>
