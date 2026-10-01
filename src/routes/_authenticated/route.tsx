@@ -10,6 +10,11 @@ export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async () => {
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw redirect({ to: "/auth" });
+    const { data: prof } = await supabase.from("profiles").select("disabled").eq("id", data.session.user.id).maybeSingle();
+    if (prof?.disabled) {
+      await supabase.auth.signOut();
+      throw redirect({ to: "/auth" });
+    }
   },
   component: AppLayout,
 });
