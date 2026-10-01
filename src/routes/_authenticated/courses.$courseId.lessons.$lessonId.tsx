@@ -9,7 +9,7 @@ import { RichText } from "@/components/rich-text";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import { parseVideo } from "@/lib/courses";
-import { useCourse } from "./courses.$courseId.index";
+import { useCourse } from "@/lib/use-course";
 
 export const Route = createFileRoute("/_authenticated/courses/$courseId/lessons/$lessonId")({
   head: () => ({ meta: [{ title: "Lesson — StudyAI" }, { name: "robots", content: "noindex" }] }),

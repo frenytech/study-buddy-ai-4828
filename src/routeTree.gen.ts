@@ -27,6 +27,7 @@ import { Route as AuthenticatedBillingIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedBillingCallbackRouteImport } from './routes/_authenticated/billing.callback'
 import { Route as AuthenticatedCbtIndexRouteImport } from './routes/_authenticated/cbt.index'
 import { Route as AuthenticatedCbtSessionIdRouteImport } from './routes/_authenticated/cbt.$sessionId'
+import { Route as AuthenticatedCoursesIndexRouteImport } from './routes/_authenticated/courses.index'
 import { Route as AuthenticatedMaterialsIndexRouteImport } from './routes/_authenticated/materials.index'
 import { Route as AuthenticatedMaterialsMaterialIdRouteImport } from './routes/_authenticated/materials.$materialId'
 import { Route as AuthenticatedResultsSessionIdRouteImport } from './routes/_authenticated/results.$sessionId'
@@ -36,6 +37,8 @@ import { Route as ApiMaterialsGenerateRouteImport } from './routes/api/materials
 import { Route as ApiPaystackInitRouteImport } from './routes/api/paystack/init'
 import { Route as ApiPaystackVerifyRouteImport } from './routes/api/paystack/verify'
 import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack-webhook'
+import { Route as AuthenticatedCoursesCourseIdIndexRouteImport } from './routes/_authenticated/courses.$courseId.index'
+import { Route as AuthenticatedCoursesCourseIdLessonsLessonIdRouteImport } from './routes/_authenticated/courses.$courseId.lessons.$lessonId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -129,6 +132,12 @@ const AuthenticatedCbtSessionIdRoute =
     path: '/cbt/$sessionId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCoursesIndexRoute =
+  AuthenticatedCoursesIndexRouteImport.update({
+    id: '/courses/',
+    path: '/courses/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedMaterialsIndexRoute =
   AuthenticatedMaterialsIndexRouteImport.update({
     id: '/materials/',
@@ -179,6 +188,18 @@ const ApiPublicPaystackWebhookRoute =
     path: '/api/public/paystack-webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedCoursesCourseIdIndexRoute =
+  AuthenticatedCoursesCourseIdIndexRouteImport.update({
+    id: '/courses/$courseId/',
+    path: '/courses/$courseId/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCoursesCourseIdLessonsLessonIdRoute =
+  AuthenticatedCoursesCourseIdLessonsLessonIdRouteImport.update({
+    id: '/courses/$courseId/lessons/$lessonId',
+    path: '/courses/$courseId/lessons/$lessonId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -206,7 +227,10 @@ export interface FileRoutesByFullPath {
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
   '/billing/': typeof AuthenticatedBillingIndexRoute
   '/cbt/': typeof AuthenticatedCbtIndexRoute
+  '/courses/': typeof AuthenticatedCoursesIndexRoute
   '/materials/': typeof AuthenticatedMaterialsIndexRoute
+  '/courses/$courseId/': typeof AuthenticatedCoursesCourseIdIndexRoute
+  '/courses/$courseId/lessons/$lessonId': typeof AuthenticatedCoursesCourseIdLessonsLessonIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -234,7 +258,10 @@ export interface FileRoutesByTo {
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
   '/billing': typeof AuthenticatedBillingIndexRoute
   '/cbt': typeof AuthenticatedCbtIndexRoute
+  '/courses': typeof AuthenticatedCoursesIndexRoute
   '/materials': typeof AuthenticatedMaterialsIndexRoute
+  '/courses/$courseId': typeof AuthenticatedCoursesCourseIdIndexRoute
+  '/courses/$courseId/lessons/$lessonId': typeof AuthenticatedCoursesCourseIdLessonsLessonIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -264,7 +291,10 @@ export interface FileRoutesById {
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
   '/_authenticated/billing/': typeof AuthenticatedBillingIndexRoute
   '/_authenticated/cbt/': typeof AuthenticatedCbtIndexRoute
+  '/_authenticated/courses/': typeof AuthenticatedCoursesIndexRoute
   '/_authenticated/materials/': typeof AuthenticatedMaterialsIndexRoute
+  '/_authenticated/courses/$courseId/': typeof AuthenticatedCoursesCourseIdIndexRoute
+  '/_authenticated/courses/$courseId/lessons/$lessonId': typeof AuthenticatedCoursesCourseIdLessonsLessonIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -294,7 +324,10 @@ export interface FileRouteTypes {
     | '/api/public/paystack-webhook'
     | '/billing/'
     | '/cbt/'
+    | '/courses/'
     | '/materials/'
+    | '/courses/$courseId/'
+    | '/courses/$courseId/lessons/$lessonId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -322,7 +355,10 @@ export interface FileRouteTypes {
     | '/api/public/paystack-webhook'
     | '/billing'
     | '/cbt'
+    | '/courses'
     | '/materials'
+    | '/courses/$courseId'
+    | '/courses/$courseId/lessons/$lessonId'
   id:
     | '__root__'
     | '/'
@@ -351,7 +387,10 @@ export interface FileRouteTypes {
     | '/api/public/paystack-webhook'
     | '/_authenticated/billing/'
     | '/_authenticated/cbt/'
+    | '/_authenticated/courses/'
     | '/_authenticated/materials/'
+    | '/_authenticated/courses/$courseId/'
+    | '/_authenticated/courses/$courseId/lessons/$lessonId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -501,6 +540,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCbtSessionIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/courses/': {
+      id: '/_authenticated/courses/'
+      path: '/courses'
+      fullPath: '/courses/'
+      preLoaderRoute: typeof AuthenticatedCoursesIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/materials/': {
       id: '/_authenticated/materials/'
       path: '/materials'
@@ -564,6 +610,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaystackWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/courses/$courseId/': {
+      id: '/_authenticated/courses/$courseId/'
+      path: '/courses/$courseId'
+      fullPath: '/courses/$courseId/'
+      preLoaderRoute: typeof AuthenticatedCoursesCourseIdIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/courses/$courseId/lessons/$lessonId': {
+      id: '/_authenticated/courses/$courseId/lessons/$lessonId'
+      path: '/courses/$courseId/lessons/$lessonId'
+      fullPath: '/courses/$courseId/lessons/$lessonId'
+      preLoaderRoute: typeof AuthenticatedCoursesCourseIdLessonsLessonIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -578,7 +638,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedResultsSessionIdRoute: typeof AuthenticatedResultsSessionIdRoute
   AuthenticatedBillingIndexRoute: typeof AuthenticatedBillingIndexRoute
   AuthenticatedCbtIndexRoute: typeof AuthenticatedCbtIndexRoute
+  AuthenticatedCoursesIndexRoute: typeof AuthenticatedCoursesIndexRoute
   AuthenticatedMaterialsIndexRoute: typeof AuthenticatedMaterialsIndexRoute
+  AuthenticatedCoursesCourseIdIndexRoute: typeof AuthenticatedCoursesCourseIdIndexRoute
+  AuthenticatedCoursesCourseIdLessonsLessonIdRoute: typeof AuthenticatedCoursesCourseIdLessonsLessonIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -592,7 +655,12 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedResultsSessionIdRoute: AuthenticatedResultsSessionIdRoute,
   AuthenticatedBillingIndexRoute: AuthenticatedBillingIndexRoute,
   AuthenticatedCbtIndexRoute: AuthenticatedCbtIndexRoute,
+  AuthenticatedCoursesIndexRoute: AuthenticatedCoursesIndexRoute,
   AuthenticatedMaterialsIndexRoute: AuthenticatedMaterialsIndexRoute,
+  AuthenticatedCoursesCourseIdIndexRoute:
+    AuthenticatedCoursesCourseIdIndexRoute,
+  AuthenticatedCoursesCourseIdLessonsLessonIdRoute:
+    AuthenticatedCoursesCourseIdLessonsLessonIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
