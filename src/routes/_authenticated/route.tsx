@@ -21,15 +21,15 @@ export const Route = createFileRoute("/_authenticated")({
 
 const links = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/cbt", label: "CBT Practice", icon: Timer },
-  { to: "/courses", label: "Courses", icon: GraduationCap },
-  { to: "/tutor", label: "AI Tutor", icon: Bot },
-  { to: "/materials", label: "Materials", icon: FileText },
-  { to: "/planner", label: "Planner", icon: CalendarDays },
+  { to: "/courses", label: "My Courses", icon: GraduationCap },
+  { to: "/materials", label: "Materials, Summaries & Flashcards", icon: FileText },
+  { to: "/cbt", label: "JAMB & WAEC CBT", icon: Timer },
+  { to: "/planner", label: "Study Planner", icon: CalendarDays },
   { to: "/progress", label: "Progress", icon: TrendingUp },
+  { to: "/tutor", label: "AI Tutor", icon: Bot },
   { to: "/search", label: "Search", icon: Search },
   { to: "/profile", label: "Profile", icon: UserCircle },
-  { to: "/billing", label: "Plan", icon: CreditCard },
+  { to: "/billing", label: "Upgrade Plan", icon: CreditCard },
 ] as const;
 
 function AppLayout() {
