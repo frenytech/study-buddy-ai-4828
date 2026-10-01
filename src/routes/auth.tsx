@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,10 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [level, setLevel] = useState("");
+  const [dept, setDept] = useState("");
+  const [levels, setLevels] = useState<string[]>([]);
+  useEffect(() => { supabase.from("academic_levels").select("label").order("position").then(({ data }) => setLevels((data ?? []).map((l) => l.label))); }, []);
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
 
@@ -36,7 +40,7 @@ function AuthPage() {
     try {
       if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
-          email, password, options: { data: { full_name: name }, emailRedirectTo: `${window.location.origin}/dashboard` },
+          email, password, options: { data: { full_name: name, academic_level: level, department: dept }, emailRedirectTo: `${window.location.origin}/dashboard` },
         });
         if (error) throw error;
         if (data.session) navigate({ to: "/dashboard" });
@@ -70,6 +74,15 @@ function AuthPage() {
         <form onSubmit={submit} className="mt-6 space-y-4">
           {mode === "signup" && (
             <div><Label htmlFor="name">Full name</Label><Input id="name" required value={name} onChange={(e) => setName(e.target.value)} /></div>
+          )}
+          {mode === "signup" && (
+            <div className="grid grid-cols-2 gap-3">
+              <div><Label htmlFor="level">Academic level</Label>
+                <select id="level" required value={level} onChange={(e) => setLevel(e.target.value)} className="mt-1 h-10 w-full rounded-md border border-input bg-background px-3 text-sm">
+                  <option value="">Choose…</option>{levels.map((l) => <option key={l}>{l}</option>)}
+                </select></div>
+              <div><Label htmlFor="dept">Department / course</Label><Input id="dept" required value={dept} onChange={(e) => setDept(e.target.value)} placeholder="e.g. Science" /></div>
+            </div>
           )}
           <div><Label htmlFor="email">Email</Label><Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} /></div>
           {mode !== "forgot" && (
