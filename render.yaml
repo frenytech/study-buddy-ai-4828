@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: studyai
+    runtime: node
+    plan: free
+    buildCommand: npm install -g bun && bun install && NITRO_PRESET=node-server bun run build
+    startCommand: node .output/server/index.mjs
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NITRO_PRESET
+        value: node-server
+      # Public (read at build time)
+      - key: VITE_SUPABASE_URL
+        value: https://ruvuuafauqtqqpfjmrme.supabase.co
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false
+      # Server-only secrets — set in the Render dashboard
+      - key: STUDYAI_SERVICE_ROLE_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_MODEL
+        value: openai/gpt-4o-mini
+      - key: PAYSTACK_SECRET_KEY
+        sync: false
