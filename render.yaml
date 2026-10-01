@@ -3,7 +3,7 @@ services:
     name: studyai
     runtime: node
     plan: free
-    buildCommand: npm install -g bun && bun install && NITRO_PRESET=node-server bun run build
+    buildCommand: bun install && NITRO_PRESET=node-server bun run build
     startCommand: node .output/server/index.mjs
     healthCheckPath: /
     envVars:
