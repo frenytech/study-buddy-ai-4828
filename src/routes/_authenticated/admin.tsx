@@ -304,42 +304,83 @@ function BulkImport() {
 
 function Users() {
   const qc = useQueryClient();
+  const { user: me } = useAuth();
+  const [q, setQ] = useState("");
+  const [planF, setPlanF] = useState("all");
+  const [statusF, setStatusF] = useState("all");
   const { data } = useQuery({
     queryKey: ["admin-users"],
     queryFn: async () => {
-      const [{ data: p }, { data: r }, { data: s }] = await Promise.all([
-        supabase.from("profiles").select("id,full_name,email,created_at").order("created_at", { ascending: false }).limit(500),
+      const today = new Date().toISOString().slice(0, 10);
+      const [{ data: p }, { data: r }, { data: s }, { data: u }] = await Promise.all([
+        supabase.from("profiles").select("id,full_name,email,created_at,academic_level,department,disabled").order("created_at", { ascending: false }).limit(1000),
         supabase.from("user_roles").select("user_id,role").eq("role", "admin"),
-        supabase.from("subscriptions").select("user_id,plan,current_period_end"),
+        supabase.from("subscriptions").select("user_id,plan,status,current_period_end"),
+        supabase.from("ai_usage").select("user_id,count").eq("day", today),
       ]);
       const admins = new Set((r ?? []).map((x) => x.user_id));
       const subs = new Map((s ?? []).map((x) => [x.user_id, x]));
-      return (p ?? []).map((u) => ({ ...u, admin: admins.has(u.id), sub: subs.get(u.id) }));
+      const use = new Map((u ?? []).map((x) => [x.user_id, x.count]));
+      return (p ?? []).map((x) => {
+        const sub = subs.get(x.id);
+        const active = sub && sub.status === "active" && (!sub.current_period_end || new Date(sub.current_period_end) > new Date());
+        return { ...x, admin: admins.has(x.id), plan: active ? sub!.plan : "free", used: use.get(x.id) ?? 0 };
+      });
     },
   });
   async function toggle(id: string, admin: boolean) {
+    if (id === me?.id) return toast.error("You can't change your own role.");
     const { error } = admin
       ? await supabase.from("user_roles").delete().eq("user_id", id).eq("role", "admin")
       : await supabase.from("user_roles").insert({ user_id: id, role: "admin" });
     if (error) toast.error(error.message);
     qc.invalidateQueries({ queryKey: ["admin-users"] });
   }
+  async function setDisabled(id: string, disabled: boolean) {
+    const { error } = await supabase.from("profiles").update({ disabled }).eq("id", id);
+    if (error) toast.error(error.message); else toast.success(disabled ? "Account disabled" : "Account enabled");
+    qc.invalidateQueries({ queryKey: ["admin-users"] });
+  }
+  const t = q.toLowerCase();
+  const rows = (data ?? []).filter((u) =>
+    (!t || `${u.full_name ?? ""} ${u.email ?? ""} ${u.department ?? ""}`.toLowerCase().includes(t)) &&
+    (planF === "all" || u.plan === planF) &&
+    (statusF === "all" || (statusF === "admin" ? u.admin : statusF === "disabled" ? u.disabled : !u.disabled)));
   return (
-    <div className="mt-4 overflow-x-auto rounded-2xl border border-border bg-card">
-      <table className="w-full text-sm">
-        <thead className="bg-muted text-left"><tr><th className="p-3">Name</th><th className="p-3">Email</th><th className="p-3">Plan</th><th className="p-3">Joined</th><th className="p-3"></th></tr></thead>
-        <tbody>
-          {(data ?? []).map((u) => (
-            <tr key={u.id} className="border-t border-border">
-              <td className="p-3">{u.full_name ?? "—"} {u.admin && <Badge className="ml-1">admin</Badge>}</td>
-              <td className="p-3">{u.email}</td>
-              <td className="p-3 capitalize">{u.sub?.plan ?? "free"}</td>
-              <td className="p-3">{new Date(u.created_at).toLocaleDateString()}</td>
-              <td className="p-3 text-right"><Button size="sm" variant="outline" onClick={() => toggle(u.id, u.admin)}>{u.admin ? "Remove admin" : "Make admin"}</Button></td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="mt-4 space-y-3">
+      <div className="flex flex-wrap gap-2">
+        <Input placeholder="Search name, email, department…" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-xs" />
+        <select value={planF} onChange={(e) => setPlanF(e.target.value)} className="h-10 rounded-md border border-input bg-background px-3 text-sm">
+          <option value="all">All plans</option><option value="free">Free</option><option value="pro">Pro</option><option value="premium">Premium</option>
+        </select>
+        <select value={statusF} onChange={(e) => setStatusF(e.target.value)} className="h-10 rounded-md border border-input bg-background px-3 text-sm">
+          <option value="all">All accounts</option><option value="active">Active</option><option value="disabled">Disabled</option><option value="admin">Admins</option>
+        </select>
+        <span className="self-center text-sm text-muted-foreground">{rows.length} users</span>
+      </div>
+      <div className="overflow-x-auto rounded-2xl border border-border bg-card">
+        <table className="w-full text-sm">
+          <thead className="bg-muted text-left"><tr><th className="p-3">Name</th><th className="p-3">Email</th><th className="p-3">Level / Dept</th><th className="p-3">Plan</th><th className="p-3">AI today</th><th className="p-3">Joined</th><th className="p-3"></th></tr></thead>
+          <tbody>
+            {rows.map((u) => (
+              <tr key={u.id} className="border-t border-border">
+                <td className="p-3">{u.full_name ?? "—"} {u.admin && <Badge className="ml-1">admin</Badge>} {u.disabled && <Badge variant="destructive" className="ml-1">disabled</Badge>}</td>
+                <td className="p-3">{u.email}</td>
+                <td className="p-3">{u.academic_level ?? "—"} · {u.department ?? "—"}</td>
+                <td className="p-3 capitalize">{u.plan}</td>
+                <td className="p-3">{u.used}</td>
+                <td className="p-3">{new Date(u.created_at).toLocaleDateString()}</td>
+                <td className="space-x-2 whitespace-nowrap p-3 text-right">
+                  {u.id !== me?.id && <>
+                    <Button size="sm" variant="outline" onClick={() => toggle(u.id, u.admin)}>{u.admin ? "Remove admin" : "Make admin"}</Button>
+                    <Button size="sm" variant={u.disabled ? "outline" : "destructive"} onClick={() => setDisabled(u.id, !u.disabled)}>{u.disabled ? "Enable" : "Disable"}</Button>
+                  </>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
