@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, redirect, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, Timer, Bot, CalendarDays, CreditCard, Shield, FileText, LogOut, GraduationCap } from "lucide-react";
+import { LayoutDashboard, Timer, Bot, CalendarDays, CreditCard, Shield, FileText, LogOut, GraduationCap, TrendingUp, Search, UserCircle } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import { Logo } from "@/components/brand";
@@ -10,6 +10,11 @@ export const Route = createFileRoute("/_authenticated")({
   beforeLoad: async () => {
     const { data } = await supabase.auth.getSession();
     if (!data.session) throw redirect({ to: "/auth" });
+    const { data: prof } = await supabase.from("profiles").select("disabled").eq("id", data.session.user.id).maybeSingle();
+    if (prof?.disabled) {
+      await supabase.auth.signOut();
+      throw redirect({ to: "/auth" });
+    }
   },
   component: AppLayout,
 });
@@ -21,6 +26,9 @@ const links = [
   { to: "/tutor", label: "AI Tutor", icon: Bot },
   { to: "/materials", label: "Materials", icon: FileText },
   { to: "/planner", label: "Planner", icon: CalendarDays },
+  { to: "/progress", label: "Progress", icon: TrendingUp },
+  { to: "/search", label: "Search", icon: Search },
+  { to: "/profile", label: "Profile", icon: UserCircle },
   { to: "/billing", label: "Plan", icon: CreditCard },
 ] as const;
 
@@ -56,7 +64,7 @@ function AppLayout() {
         <button onClick={logout} aria-label="Log out"><LogOut className="h-5 w-5" /></button>
       </header>
       <main className="flex-1 pb-20 md:pb-0"><Outlet /></main>
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex justify-around border-t border-border bg-card py-2 md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-30 flex gap-1 overflow-x-auto border-t border-border bg-card py-2 md:hidden">
         {all.map((l) => (
           <Link key={l.to} to={l.to} className="flex flex-col items-center gap-0.5 px-2 text-[11px] text-muted-foreground" activeProps={{ className: "text-primary" }}>
             <l.icon className="h-5 w-5" />{l.label.split(" ")[0]}

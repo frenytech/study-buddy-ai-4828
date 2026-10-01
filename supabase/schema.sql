@@ -507,3 +507,86 @@ create policy "progress own update" on public.lesson_progress for update to auth
 drop policy if exists "progress own delete" on public.lesson_progress;
 create policy "progress own delete" on public.lesson_progress for delete to authenticated
   using (user_id = auth.uid());
+
+-- ============ QUALITY PASS: PROFILE FIELDS, LEVELS, ACCOUNT STATUS ============
+alter table public.profiles add column if not exists academic_level text;
+alter table public.profiles add column if not exists department text;
+alter table public.profiles add column if not exists avatar_url text;
+alter table public.profiles add column if not exists preferences jsonb not null default '{}'::jsonb;
+alter table public.profiles add column if not exists disabled boolean not null default false;
+
+create or replace function public.handle_new_user() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  insert into public.profiles (id, full_name, email, academic_level, department)
+  values (new.id, coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name'), new.email,
+          new.raw_user_meta_data->>'academic_level', new.raw_user_meta_data->>'department')
+  on conflict (id) do nothing;
+  insert into public.user_roles (user_id, role) values (new.id, 'student') on conflict do nothing;
+  return new;
+end $$;
+
+-- Only admins may change the disabled flag; nobody may disable themselves.
+create or replace function public.guard_profile_update() returns trigger
+language plpgsql security definer set search_path = public as $$
+begin
+  if new.disabled is distinct from old.disabled then
+    if not public.has_role(auth.uid(),'admin') or new.id = auth.uid() then
+      raise exception 'Not allowed to change account status';
+    end if;
+  end if;
+  return new;
+end $$;
+drop trigger if exists profiles_guard on public.profiles;
+create trigger profiles_guard before update on public.profiles
+  for each row execute function public.guard_profile_update();
+
+drop policy if exists "admin profile update" on public.profiles;
+create policy "admin profile update" on public.profiles for update to authenticated
+  using (public.has_role(auth.uid(),'admin')) with check (public.has_role(auth.uid(),'admin'));
+
+-- Disabled accounts get no AI credits.
+create or replace function public.consume_ai_credit() returns boolean
+language plpgsql security definer set search_path = public as $$
+declare _plan text; _limit int; _used int;
+begin
+  if auth.uid() is null then return false; end if;
+  if exists (select 1 from profiles where id = auth.uid() and disabled) then return false; end if;
+  _plan := current_plan(auth.uid());
+  _limit := case _plan when 'premium' then 500 when 'pro' then 100 else 10 end;
+  insert into ai_usage (user_id, day, count) values (auth.uid(), current_date, 0) on conflict do nothing;
+  select count into _used from ai_usage where user_id = auth.uid() and day = current_date for update;
+  if _used >= _limit then return false; end if;
+  update ai_usage set count = count + 1 where user_id = auth.uid() and day = current_date;
+  return true;
+end $$;
+
+-- Configurable academic levels
+create table if not exists public.academic_levels (
+  id serial primary key,
+  label text not null unique,
+  position int not null default 0
+);
+grant select on public.academic_levels to anon, authenticated;
+grant insert, update, delete on public.academic_levels to authenticated;
+grant all on public.academic_levels to service_role;
+alter table public.academic_levels enable row level security;
+drop policy if exists "levels read" on public.academic_levels;
+create policy "levels read" on public.academic_levels for select to anon, authenticated using (true);
+drop policy if exists "levels admin" on public.academic_levels;
+create policy "levels admin" on public.academic_levels for all to authenticated
+  using (public.has_role(auth.uid(),'admin')) with check (public.has_role(auth.uid(),'admin'));
+insert into public.academic_levels (label, position) values
+ ('SS1',1),('SS2',2),('SS3',3),('Pre-university',4),('100 Level',5),('200 Level',6),('300 Level',7),('400 Level',8),('500 Level',9)
+on conflict do nothing;
+
+-- Avatars bucket (public read, users write into their own folder)
+insert into storage.buckets (id, name, public) values ('avatars','avatars', true) on conflict do nothing;
+drop policy if exists "avatar read" on storage.objects;
+create policy "avatar read" on storage.objects for select using (bucket_id = 'avatars');
+drop policy if exists "avatar write" on storage.objects;
+create policy "avatar write" on storage.objects for insert to authenticated
+  with check (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+drop policy if exists "avatar update" on storage.objects;
+create policy "avatar update" on storage.objects for update to authenticated
+  using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
