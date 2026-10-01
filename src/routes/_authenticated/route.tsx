@@ -1,5 +1,5 @@
 import { createFileRoute, Link, Outlet, redirect, useNavigate } from "@tanstack/react-router";
-import { LayoutDashboard, Timer, Bot, CalendarDays, CreditCard, Shield, FileText, LogOut } from "lucide-react";
+import { LayoutDashboard, Timer, Bot, CalendarDays, CreditCard, Shield, FileText, LogOut, GraduationCap } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
 import { Logo } from "@/components/brand";
@@ -17,6 +17,7 @@ export const Route = createFileRoute("/_authenticated")({
 const links = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/cbt", label: "CBT Practice", icon: Timer },
+  { to: "/courses", label: "Courses", icon: GraduationCap },
   { to: "/tutor", label: "AI Tutor", icon: Bot },
   { to: "/materials", label: "Materials", icon: FileText },
   { to: "/planner", label: "Planner", icon: CalendarDays },

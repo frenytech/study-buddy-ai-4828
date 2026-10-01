@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase, authHeader } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth";
+import { AdminCourses } from "@/components/admin-courses";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({ meta: [{ title: "Admin Control Room — StudyAI" }, { name: "robots", content: "noindex" }] }),
@@ -29,6 +30,7 @@ function Admin() {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="ai">AI Question Generator</TabsTrigger>
           <TabsTrigger value="questions">Questions</TabsTrigger>
+          <TabsTrigger value="courses">Courses</TabsTrigger>
           <TabsTrigger value="import">Bulk upload</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
@@ -36,6 +38,7 @@ function Admin() {
         <TabsContent value="overview"><Overview /></TabsContent>
         <TabsContent value="ai"><AiGenerator /></TabsContent>
         <TabsContent value="questions"><Questions /></TabsContent>
+        <TabsContent value="courses"><AdminCourses /></TabsContent>
         <TabsContent value="import"><BulkImport /></TabsContent>
         <TabsContent value="users"><Users /></TabsContent>
         <TabsContent value="payments"><Payments /></TabsContent>
