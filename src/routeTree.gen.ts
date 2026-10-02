@@ -16,7 +16,9 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as JambRouteImport } from './routes/jamb'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as WaecRouteImport } from './routes/waec'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -77,9 +79,19 @@ const PricingRoute = PricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const WaecRoute = WaecRouteImport.update({
@@ -226,7 +238,9 @@ export interface FileRoutesByFullPath {
   '/features': typeof FeaturesRoute
   '/jamb': typeof JambRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terms': typeof TermsRoute
   '/waec': typeof WaecRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -260,7 +274,9 @@ export interface FileRoutesByTo {
   '/features': typeof FeaturesRoute
   '/jamb': typeof JambRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terms': typeof TermsRoute
   '/waec': typeof WaecRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -296,7 +312,9 @@ export interface FileRoutesById {
   '/features': typeof FeaturesRoute
   '/jamb': typeof JambRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/terms': typeof TermsRoute
   '/waec': typeof WaecRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -332,7 +350,9 @@ export interface FileRouteTypes {
     | '/features'
     | '/jamb'
     | '/pricing'
+    | '/privacy'
     | '/reset-password'
+    | '/terms'
     | '/waec'
     | '/admin'
     | '/dashboard'
@@ -366,7 +386,9 @@ export interface FileRouteTypes {
     | '/features'
     | '/jamb'
     | '/pricing'
+    | '/privacy'
     | '/reset-password'
+    | '/terms'
     | '/waec'
     | '/admin'
     | '/dashboard'
@@ -401,7 +423,9 @@ export interface FileRouteTypes {
     | '/features'
     | '/jamb'
     | '/pricing'
+    | '/privacy'
     | '/reset-password'
+    | '/terms'
     | '/waec'
     | '/_authenticated/admin'
     | '/_authenticated/dashboard'
@@ -437,7 +461,9 @@ export interface RootRouteChildren {
   FeaturesRoute: typeof FeaturesRoute
   JambRoute: typeof JambRoute
   PricingRoute: typeof PricingRoute
+  PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  TermsRoute: typeof TermsRoute
   WaecRoute: typeof WaecRoute
   ApiTutorRoute: typeof ApiTutorRoute
   ApiAdminGenerateQuestionsRoute: typeof ApiAdminGenerateQuestionsRoute
@@ -499,11 +525,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reset-password': {
       id: '/reset-password'
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/waec': {
@@ -737,7 +777,9 @@ const rootRouteChildren: RootRouteChildren = {
   FeaturesRoute: FeaturesRoute,
   JambRoute: JambRoute,
   PricingRoute: PricingRoute,
+  PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  TermsRoute: TermsRoute,
   WaecRoute: WaecRoute,
   ApiTutorRoute: ApiTutorRoute,
   ApiAdminGenerateQuestionsRoute: ApiAdminGenerateQuestionsRoute,
