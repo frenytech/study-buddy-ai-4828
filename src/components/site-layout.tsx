@@ -78,7 +78,9 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-border py-4 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} StudyAI · Powered by FrenyTech
+        © {new Date().getFullYear()} StudyAI · Powered by FrenyTech ·{" "}
+        <Link to="/privacy" className="hover:text-foreground">Privacy</Link> ·{" "}
+        <Link to="/terms" className="hover:text-foreground">Terms</Link>
       </div>
     </footer>
   );
