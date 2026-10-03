@@ -590,3 +590,34 @@ create policy "avatar write" on storage.objects for insert to authenticated
 drop policy if exists "avatar update" on storage.objects;
 create policy "avatar update" on storage.objects for update to authenticated
   using (bucket_id = 'avatars' and (storage.foldername(name))[1] = auth.uid()::text);
+
+-- ============ SUPER ADMIN: first account is super_admin, everyone after is student ============
+alter type public.app_role add value if not exists 'super_admin';
+
+-- super_admin passes every 'admin' check (compared as text so this runs in one script).
+create or replace function public.has_role(_user_id uuid, _role public.app_role)
+returns boolean language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.user_roles
+    where user_id = _user_id
+      and (role = _role or (_role::text = 'admin' and role::text = 'super_admin'))
+  )
+$$;
+
+create or replace function public.handle_new_user() returns trigger
+language plpgsql security definer set search_path = public as $$
+declare _first boolean;
+begin
+  insert into public.profiles (id, full_name, email, academic_level, department)
+  values (new.id, coalesce(new.raw_user_meta_data->>'full_name', new.raw_user_meta_data->>'name'), new.email,
+          new.raw_user_meta_data->>'academic_level', new.raw_user_meta_data->>'department')
+  on conflict (id) do nothing;
+  perform pg_advisory_xact_lock(hashtext('studyai_first_user'));
+  select not exists (select 1 from public.user_roles where role::text in ('admin','super_admin')) into _first;
+  insert into public.user_roles (user_id, role)
+    values (new.id, (case when _first then 'super_admin' else 'student' end)::text::public.app_role)
+    on conflict do nothing;
+  return new;
+end $$;
+
+-- Then run supabase/promote-first-admin.sql as a separate query (new enum values can't be used in the same run).
