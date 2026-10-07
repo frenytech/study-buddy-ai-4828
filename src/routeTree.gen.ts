@@ -42,6 +42,9 @@ import { Route as ApiMaterialsGenerateRouteImport } from './routes/api/materials
 import { Route as ApiPaystackInitRouteImport } from './routes/api/paystack/init'
 import { Route as ApiPaystackVerifyRouteImport } from './routes/api/paystack/verify'
 import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack-webhook'
+import { Route as ApiTutorSttRouteImport } from './routes/api/tutor/stt'
+import { Route as ApiTutorTtsRouteImport } from './routes/api/tutor/tts'
+import { Route as ApiTutorVideosRouteImport } from './routes/api/tutor/videos'
 import { Route as AuthenticatedCoursesCourseIdIndexRouteImport } from './routes/_authenticated/courses.$courseId.index'
 import { Route as AuthenticatedCoursesCourseIdLessonsLessonIdRouteImport } from './routes/_authenticated/courses.$courseId.lessons.$lessonId'
 
@@ -218,6 +221,21 @@ const ApiPublicPaystackWebhookRoute =
     path: '/api/public/paystack-webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiTutorSttRoute = ApiTutorSttRouteImport.update({
+  id: '/stt',
+  path: '/stt',
+  getParentRoute: () => ApiTutorRoute,
+} as any)
+const ApiTutorTtsRoute = ApiTutorTtsRouteImport.update({
+  id: '/tts',
+  path: '/tts',
+  getParentRoute: () => ApiTutorRoute,
+} as any)
+const ApiTutorVideosRoute = ApiTutorVideosRouteImport.update({
+  id: '/videos',
+  path: '/videos',
+  getParentRoute: () => ApiTutorRoute,
+} as any)
 const AuthenticatedCoursesCourseIdIndexRoute =
   AuthenticatedCoursesCourseIdIndexRouteImport.update({
     id: '/courses/$courseId/',
@@ -249,7 +267,7 @@ export interface FileRoutesByFullPath {
   '/progress': typeof AuthenticatedProgressRoute
   '/search': typeof AuthenticatedSearchRoute
   '/tutor': typeof AuthenticatedTutorRoute
-  '/api/tutor': typeof ApiTutorRoute
+  '/api/tutor': typeof ApiTutorRouteWithChildren
   '/billing/callback': typeof AuthenticatedBillingCallbackRoute
   '/cbt/$sessionId': typeof AuthenticatedCbtSessionIdRoute
   '/materials/$materialId': typeof AuthenticatedMaterialsMaterialIdRoute
@@ -260,6 +278,9 @@ export interface FileRoutesByFullPath {
   '/api/paystack/init': typeof ApiPaystackInitRoute
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
+  '/api/tutor/stt': typeof ApiTutorSttRoute
+  '/api/tutor/tts': typeof ApiTutorTtsRoute
+  '/api/tutor/videos': typeof ApiTutorVideosRoute
   '/billing/': typeof AuthenticatedBillingIndexRoute
   '/cbt/': typeof AuthenticatedCbtIndexRoute
   '/courses/': typeof AuthenticatedCoursesIndexRoute
@@ -285,7 +306,7 @@ export interface FileRoutesByTo {
   '/progress': typeof AuthenticatedProgressRoute
   '/search': typeof AuthenticatedSearchRoute
   '/tutor': typeof AuthenticatedTutorRoute
-  '/api/tutor': typeof ApiTutorRoute
+  '/api/tutor': typeof ApiTutorRouteWithChildren
   '/billing/callback': typeof AuthenticatedBillingCallbackRoute
   '/cbt/$sessionId': typeof AuthenticatedCbtSessionIdRoute
   '/materials/$materialId': typeof AuthenticatedMaterialsMaterialIdRoute
@@ -296,6 +317,9 @@ export interface FileRoutesByTo {
   '/api/paystack/init': typeof ApiPaystackInitRoute
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
+  '/api/tutor/stt': typeof ApiTutorSttRoute
+  '/api/tutor/tts': typeof ApiTutorTtsRoute
+  '/api/tutor/videos': typeof ApiTutorVideosRoute
   '/billing': typeof AuthenticatedBillingIndexRoute
   '/cbt': typeof AuthenticatedCbtIndexRoute
   '/courses': typeof AuthenticatedCoursesIndexRoute
@@ -323,7 +347,7 @@ export interface FileRoutesById {
   '/_authenticated/progress': typeof AuthenticatedProgressRoute
   '/_authenticated/search': typeof AuthenticatedSearchRoute
   '/_authenticated/tutor': typeof AuthenticatedTutorRoute
-  '/api/tutor': typeof ApiTutorRoute
+  '/api/tutor': typeof ApiTutorRouteWithChildren
   '/_authenticated/billing/callback': typeof AuthenticatedBillingCallbackRoute
   '/_authenticated/cbt/$sessionId': typeof AuthenticatedCbtSessionIdRoute
   '/_authenticated/materials/$materialId': typeof AuthenticatedMaterialsMaterialIdRoute
@@ -334,6 +358,9 @@ export interface FileRoutesById {
   '/api/paystack/init': typeof ApiPaystackInitRoute
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
+  '/api/tutor/stt': typeof ApiTutorSttRoute
+  '/api/tutor/tts': typeof ApiTutorTtsRoute
+  '/api/tutor/videos': typeof ApiTutorVideosRoute
   '/_authenticated/billing/': typeof AuthenticatedBillingIndexRoute
   '/_authenticated/cbt/': typeof AuthenticatedCbtIndexRoute
   '/_authenticated/courses/': typeof AuthenticatedCoursesIndexRoute
@@ -372,6 +399,9 @@ export interface FileRouteTypes {
     | '/api/paystack/init'
     | '/api/paystack/verify'
     | '/api/public/paystack-webhook'
+    | '/api/tutor/stt'
+    | '/api/tutor/tts'
+    | '/api/tutor/videos'
     | '/billing/'
     | '/cbt/'
     | '/courses/'
@@ -408,6 +438,9 @@ export interface FileRouteTypes {
     | '/api/paystack/init'
     | '/api/paystack/verify'
     | '/api/public/paystack-webhook'
+    | '/api/tutor/stt'
+    | '/api/tutor/tts'
+    | '/api/tutor/videos'
     | '/billing'
     | '/cbt'
     | '/courses'
@@ -445,6 +478,9 @@ export interface FileRouteTypes {
     | '/api/paystack/init'
     | '/api/paystack/verify'
     | '/api/public/paystack-webhook'
+    | '/api/tutor/stt'
+    | '/api/tutor/tts'
+    | '/api/tutor/videos'
     | '/_authenticated/billing/'
     | '/_authenticated/cbt/'
     | '/_authenticated/courses/'
@@ -465,7 +501,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
   WaecRoute: typeof WaecRoute
-  ApiTutorRoute: typeof ApiTutorRoute
+  ApiTutorRoute: typeof ApiTutorRouteWithChildren
   ApiAdminGenerateQuestionsRoute: typeof ApiAdminGenerateQuestionsRoute
   ApiCbtAnalyzeRoute: typeof ApiCbtAnalyzeRoute
   ApiMaterialsGenerateRoute: typeof ApiMaterialsGenerateRoute
@@ -707,6 +743,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaystackWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/tutor/stt': {
+      id: '/api/tutor/stt'
+      path: '/stt'
+      fullPath: '/api/tutor/stt'
+      preLoaderRoute: typeof ApiTutorSttRouteImport
+      parentRoute: typeof ApiTutorRoute
+    }
+    '/api/tutor/tts': {
+      id: '/api/tutor/tts'
+      path: '/tts'
+      fullPath: '/api/tutor/tts'
+      preLoaderRoute: typeof ApiTutorTtsRouteImport
+      parentRoute: typeof ApiTutorRoute
+    }
+    '/api/tutor/videos': {
+      id: '/api/tutor/videos'
+      path: '/videos'
+      fullPath: '/api/tutor/videos'
+      preLoaderRoute: typeof ApiTutorVideosRouteImport
+      parentRoute: typeof ApiTutorRoute
+    }
     '/_authenticated/courses/$courseId/': {
       id: '/_authenticated/courses/$courseId/'
       path: '/courses/$courseId'
@@ -769,6 +826,22 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface ApiTutorRouteChildren {
+  ApiTutorSttRoute: typeof ApiTutorSttRoute
+  ApiTutorTtsRoute: typeof ApiTutorTtsRoute
+  ApiTutorVideosRoute: typeof ApiTutorVideosRoute
+}
+
+const ApiTutorRouteChildren: ApiTutorRouteChildren = {
+  ApiTutorSttRoute: ApiTutorSttRoute,
+  ApiTutorTtsRoute: ApiTutorTtsRoute,
+  ApiTutorVideosRoute: ApiTutorVideosRoute,
+}
+
+const ApiTutorRouteWithChildren = ApiTutorRoute._addFileChildren(
+  ApiTutorRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -781,7 +854,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
   WaecRoute: WaecRoute,
-  ApiTutorRoute: ApiTutorRoute,
+  ApiTutorRoute: ApiTutorRouteWithChildren,
   ApiAdminGenerateQuestionsRoute: ApiAdminGenerateQuestionsRoute,
   ApiCbtAnalyzeRoute: ApiCbtAnalyzeRoute,
   ApiMaterialsGenerateRoute: ApiMaterialsGenerateRoute,
