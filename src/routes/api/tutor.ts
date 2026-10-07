@@ -1,14 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { getRequestUser } from "@/lib/server-auth.server";
+import { ACTIONS, buildContext, type TutorAction } from "@/lib/tutor-context.server";
 
 const Body = z.object({
   messages: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(8000) })).min(1).max(40),
+  action: z.enum(Object.keys(ACTIONS) as [TutorAction, ...TutorAction[]]).default("chat"),
+  materialId: z.string().uuid().optional(),
+  voice: z.boolean().optional(),
 });
 
-const SYSTEM = `You are StudyAI Tutor, a patient, encouraging tutor for Nigerian secondary school and pre-university students preparing for JAMB UTME and WAEC SSCE.
+const SYSTEM = `You are StudyAI Tutor, a patient, encouraging teacher for Nigerian secondary school and pre-university students preparing for JAMB UTME and WAEC SSCE.
 Explain step by step, use simple language and Nigerian context where helpful. Use Markdown for structure and show working for calculations.
-If asked about specific past exam questions, never invent that a question appeared in a particular year. Keep answers focused.`;
+Never invent that a question appeared in a particular exam year.
+Honesty about sources: only say you used the student's PDF or a StudyAI lesson if that material appears in the CONTEXT below. If the context has nothing relevant, answer from general knowledge and do not claim a source.`;
 
 export const Route = createFileRoute("/api/tutor")({
   server: {
@@ -25,6 +30,18 @@ export const Route = createFileRoute("/api/tutor")({
         if (error) return Response.json({ error: "Could not check your usage." }, { status: 500 });
         if (!allowed) return Response.json({ error: "You've reached today's AI Tutor limit. Upgrade your plan for more." }, { status: 429 });
 
+        const { messages, action, materialId, voice } = parsed.data;
+        const lastUser = [...messages].reverse().find((m) => m.role === "user")?.content ?? "";
+        const recentTopic = messages.filter((m) => m.role === "user").slice(-3).map((m) => m.content).join(" ");
+        const ctx = await buildContext(auth.supabase, auth.user.id, `${lastUser} ${recentTopic}`, materialId).catch(() => ({ text: "", sources: [] as string[] }));
+
+        const system = [
+          SYSTEM,
+          `CURRENT MODE: ${ACTIONS[action]}`,
+          voice ? "VOICE MODE: your reply will be spoken aloud. Use short conversational paragraphs, no tables, no Markdown symbols, no LaTeX; say formulas in words. Keep it under 180 words and end with a short question to keep the student engaged." : "",
+          ctx.text ? `CONTEXT (the student's real data):\n${ctx.text}` : "CONTEXT: none relevant found — use general knowledge.",
+        ].filter(Boolean).join("\n\n");
+
         const upstream = await fetch("https://openrouter.ai/api/v1/chat/completions", {
           method: "POST",
           signal: request.signal,
@@ -35,16 +52,15 @@ export const Route = createFileRoute("/api/tutor")({
           body: JSON.stringify({
             model: process.env["OPENROUTER_MODEL"] || "openai/gpt-4o-mini",
             stream: true,
-            messages: [{ role: "system", content: SYSTEM }, ...parsed.data.messages],
+            messages: [{ role: "system", content: system }, ...messages],
           }),
         });
         if (!upstream.ok || !upstream.body) {
           const t = await upstream.text().catch(() => "");
           console.error("OpenRouter error", upstream.status, t);
-          const msg = upstream.status === 402 ? "The AI service is out of credits." : upstream.status === 429 ? "The AI is busy. Try again shortly." : "The AI Tutor had a problem. Please try again.";
+          const msg = upstream.status === 401 ? "The OpenRouter key is invalid." : upstream.status === 402 ? "The AI service is out of credits." : upstream.status === 429 ? "The AI is busy. Try again shortly." : "The AI Tutor had a problem. Please try again.";
           return Response.json({ error: msg }, { status: upstream.status === 429 ? 429 : 502 });
         }
-        // Convert OpenRouter SSE into a plain text stream of content deltas.
         const decoder = new TextDecoder();
         const encoder = new TextEncoder();
         let buf = "";
@@ -65,7 +81,12 @@ export const Route = createFileRoute("/api/tutor")({
             }
           },
         }));
-        return new Response(stream, { headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" } });
+        return new Response(stream, {
+          headers: {
+            "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store",
+            "X-Tutor-Sources": encodeURIComponent(JSON.stringify(ctx.sources)),
+          },
+        });
       },
     },
   },

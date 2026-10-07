@@ -9,7 +9,7 @@ StudyAI is an AI-powered learning platform for Nigerian students preparing for J
 - JAMB & WAEC CBT engine (timer, navigation, review, AI performance analysis)
 - Courses with video lessons, notes and progress tracking
 - Study planner, progress dashboard, search, profile
-- Paystack subscriptions (Pro ₦1,000 / Premium ₦1,200)
+- Paystack subscriptions (Pro ₦500 / Premium ₦700)
 - Admin Control Room: users, questions, AI question generator, courses
 
 ## Tech stack
