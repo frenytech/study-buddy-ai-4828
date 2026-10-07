@@ -20,7 +20,7 @@ export async function authHeader(): Promise<Record<string, string>> {
 
 export const PLANS = {
   free: { name: "Free", price: 0, perks: ["10 AI Tutor messages/day", "JAMB & WAEC CBT practice", "Study planner", "Basic progress"] },
-  pro: { name: "Pro", price: 1000, perks: ["100 AI Tutor messages/day", "Unlimited CBT sessions", "Full answer explanations", "Detailed progress"] },
-  premium: { name: "Premium", price: 1200, perks: ["500 AI Tutor messages/day", "Everything in Pro", "Priority new question banks", "Priority support"] },
+  pro: { name: "Pro", price: 500, perks: ["100 AI Tutor messages/day", "AI explanations & tutor actions", "Quizzes & flashcards", "Unlimited CBT & study tools", "Additional learning resources"] },
+  premium: { name: "Premium", price: 700, perks: ["500 AI Tutor messages/day", "Everything in Pro", "ElevenLabs Voice Tutor", "Video learning recommendations", "Personalized learning support"] },
 } as const;
 export type PlanId = keyof typeof PLANS;

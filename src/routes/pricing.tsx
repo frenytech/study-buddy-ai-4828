@@ -6,7 +6,7 @@ export const Route = createFileRoute("/pricing")({
   head: () => ({
     meta: [
       { title: "Pricing — StudyAI" },
-      { name: "description", content: "Free, Pro (₦1,000/month) and Premium (₦1,200/month) plans." },
+      { name: "description", content: "Free, Pro (₦500/month) and Premium (₦700/month) plans." },
       { property: "og:title", content: "Pricing — StudyAI" },
       { property: "og:description", content: "Affordable plans for every student. Pay securely with Paystack." },
     ],

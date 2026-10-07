@@ -23,7 +23,7 @@ export function adminClient() {
   return createClient(url(), key, { auth: { persistSession: false, autoRefreshToken: false } });
 }
 
-export const PLAN_PRICES_KOBO: Record<string, number> = { pro: 100000, premium: 120000 };
+export const PLAN_PRICES_KOBO: Record<string, number> = { pro: 50000, premium: 70000 };
 
 /** Activates a plan for 30 days after a verified Paystack payment. Idempotent per reference. */
 export async function activateFromPaystack(reference: string) {
