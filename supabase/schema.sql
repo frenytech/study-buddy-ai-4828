@@ -621,3 +621,19 @@ begin
 end $$;
 
 -- Then run supabase/promote-first-admin.sql as a separate query (new enum values can't be used in the same run).
+
+-- ============ APP SETTINGS (e.g. default AI Tutor model) ============
+create table if not exists public.app_settings (
+  key text primary key,
+  value text not null,
+  updated_at timestamptz not null default now()
+);
+grant select on public.app_settings to authenticated;
+grant insert, update, delete on public.app_settings to authenticated;
+grant all on public.app_settings to service_role;
+alter table public.app_settings enable row level security;
+drop policy if exists "settings readable" on public.app_settings;
+create policy "settings readable" on public.app_settings for select to authenticated using (true);
+drop policy if exists "admins manage settings" on public.app_settings;
+create policy "admins manage settings" on public.app_settings for all to authenticated
+  using (public.has_role(auth.uid(),'admin')) with check (public.has_role(auth.uid(),'admin'));

@@ -2,12 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { getRequestUser } from "@/lib/server-auth.server";
 import { ACTIONS, buildContext, type TutorAction } from "@/lib/tutor-context.server";
+import { listTextModels, omegaChat, OmegaError, FALLBACK_MODEL } from "@/lib/omegatech.server";
 
 const Body = z.object({
   messages: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(8000) })).min(1).max(40),
   action: z.enum(Object.keys(ACTIONS) as [TutorAction, ...TutorAction[]]).default("chat"),
   materialId: z.string().uuid().optional(),
   voice: z.boolean().optional(),
+  model: z.string().max(60).optional(),
 });
 
 const SYSTEM = `You are StudyAI Tutor, a patient, encouraging teacher for Nigerian secondary school and pre-university students preparing for JAMB UTME and WAEC SSCE.
@@ -23,8 +25,6 @@ export const Route = createFileRoute("/api/tutor")({
         if (!auth) return Response.json({ error: "Please sign in first." }, { status: 401 });
         const parsed = Body.safeParse(await request.json().catch(() => null));
         if (!parsed.success) return Response.json({ error: "Invalid message." }, { status: 400 });
-        const key = process.env["OPENROUTER_API_KEY"];
-        if (!key) return Response.json({ error: "The AI Tutor is not configured yet." }, { status: 503 });
 
         const { data: allowed, error } = await auth.supabase.rpc("consume_ai_credit");
         if (error) return Response.json({ error: "Could not check your usage." }, { status: 500 });
@@ -42,49 +42,28 @@ export const Route = createFileRoute("/api/tutor")({
           ctx.text ? `CONTEXT (the student's real data):\n${ctx.text}` : "CONTEXT: none relevant found — use general knowledge.",
         ].filter(Boolean).join("\n\n");
 
-        const upstream = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-          method: "POST",
-          signal: request.signal,
-          headers: {
-            Authorization: `Bearer ${key}`, "Content-Type": "application/json",
-            "HTTP-Referer": new URL(request.url).origin, "X-Title": "StudyAI",
-          },
-          body: JSON.stringify({
-            model: process.env["OPENROUTER_MODEL"] || "openai/gpt-4o-mini",
-            stream: true,
-            messages: [{ role: "system", content: system }, ...messages],
-          }),
-        });
-        if (!upstream.ok || !upstream.body) {
-          const t = await upstream.text().catch(() => "");
-          console.error("OpenRouter error", upstream.status, t);
-          const msg = upstream.status === 401 ? "The OpenRouter key is invalid." : upstream.status === 402 ? "The AI service is out of credits." : upstream.status === 429 ? "The AI is busy. Try again shortly." : "The AI Tutor had a problem. Please try again.";
-          return Response.json({ error: msg }, { status: upstream.status === 429 ? 429 : 502 });
+        const models = await listTextModels();
+        let model = parsed.data.model;
+        if (!model || !models.includes(model)) {
+          const { data: setting } = await auth.supabase.from("app_settings").select("value").eq("key", "default_tutor_model").maybeSingle();
+          model = setting?.value && models.includes(setting.value) ? setting.value : FALLBACK_MODEL;
         }
-        const decoder = new TextDecoder();
-        const encoder = new TextEncoder();
-        let buf = "";
-        const stream = upstream.body.pipeThrough(new TransformStream<Uint8Array, Uint8Array>({
-          transform(chunk, ctrl) {
-            buf += decoder.decode(chunk, { stream: true });
-            const lines = buf.split("\n");
-            buf = lines.pop() ?? "";
-            for (const line of lines) {
-              const l = line.trim();
-              if (!l.startsWith("data:")) continue;
-              const d = l.slice(5).trim();
-              if (d === "[DONE]") continue;
-              try {
-                const delta = JSON.parse(d)?.choices?.[0]?.delta?.content;
-                if (delta) ctrl.enqueue(encoder.encode(delta));
-              } catch { /* partial */ }
-            }
-          },
-        }));
-        return new Response(stream, {
+        const transcript = messages.slice(-12).map((m) => `${m.role === "user" ? "Student" : "Tutor"}: ${m.content}`).join("\n\n");
+        const query = `${system}\n\n--- CONVERSATION SO FAR ---\n${transcript}\n\nReply as the Tutor to the student's last message, following the CURRENT MODE.`;
+
+        let reply: string;
+        try {
+          reply = await omegaChat(model, query.slice(0, 24000), request.signal);
+        } catch (e: any) {
+          if (e instanceof OmegaError) return Response.json({ error: e.userMessage }, { status: e.status });
+          if (e?.name === "AbortError") return new Response(null, { status: 499 });
+          return Response.json({ error: "The AI Tutor had a problem. Please try again." }, { status: 502 });
+        }
+        return new Response(reply, {
           headers: {
             "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store",
             "X-Tutor-Sources": encodeURIComponent(JSON.stringify(ctx.sources)),
+            "X-Tutor-Model": model,
           },
         });
       },
