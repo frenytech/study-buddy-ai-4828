@@ -14,6 +14,6 @@
 - Browser client in `src/lib/supabase.ts` reads VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY from `.env` — anon key is publishable.
 - Server endpoints are TanStack server routes under `src/routes/api/*` that verify the Supabase bearer token via `src/lib/server-auth.server.ts` — keeps auth explicit without Cloud middleware.
 - CBT answers never reach students before submission: questions table is admin-only; students use `start_cbt`/`get_cbt_questions`/`submit_cbt`/`get_cbt_review` security-definer RPCs.
-- AI Tutor uses OpenRouter (user requirement) with daily limits enforced by `consume_ai_credit` RPC.
+- AI Tutor chat uses OmegaTech AICli (POST {action:"chat",model,query}, no key) via src/lib/omegatech.server.ts; default model in app_settings; daily limits via consume_ai_credit RPC. Other AI features still use OpenRouter.
 - Paystack writes subscriptions only server-side with STUDYAI_SERVICE_ROLE_KEY after verifying the transaction with Paystack.
 - Render deploys build with NITRO_PRESET=node-server and run .output/server/index.mjs (render.yaml) — Lovable build stays Cloudflare.

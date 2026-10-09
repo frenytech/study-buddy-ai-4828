@@ -42,6 +42,7 @@ import { Route as ApiMaterialsGenerateRouteImport } from './routes/api/materials
 import { Route as ApiPaystackInitRouteImport } from './routes/api/paystack/init'
 import { Route as ApiPaystackVerifyRouteImport } from './routes/api/paystack/verify'
 import { Route as ApiPublicPaystackWebhookRouteImport } from './routes/api/public/paystack-webhook'
+import { Route as ApiTutorModelsRouteImport } from './routes/api/tutor/models'
 import { Route as ApiTutorSttRouteImport } from './routes/api/tutor/stt'
 import { Route as ApiTutorTtsRouteImport } from './routes/api/tutor/tts'
 import { Route as ApiTutorVideosRouteImport } from './routes/api/tutor/videos'
@@ -221,6 +222,11 @@ const ApiPublicPaystackWebhookRoute =
     path: '/api/public/paystack-webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiTutorModelsRoute = ApiTutorModelsRouteImport.update({
+  id: '/models',
+  path: '/models',
+  getParentRoute: () => ApiTutorRoute,
+} as any)
 const ApiTutorSttRoute = ApiTutorSttRouteImport.update({
   id: '/stt',
   path: '/stt',
@@ -278,6 +284,7 @@ export interface FileRoutesByFullPath {
   '/api/paystack/init': typeof ApiPaystackInitRoute
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
+  '/api/tutor/models': typeof ApiTutorModelsRoute
   '/api/tutor/stt': typeof ApiTutorSttRoute
   '/api/tutor/tts': typeof ApiTutorTtsRoute
   '/api/tutor/videos': typeof ApiTutorVideosRoute
@@ -317,6 +324,7 @@ export interface FileRoutesByTo {
   '/api/paystack/init': typeof ApiPaystackInitRoute
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
+  '/api/tutor/models': typeof ApiTutorModelsRoute
   '/api/tutor/stt': typeof ApiTutorSttRoute
   '/api/tutor/tts': typeof ApiTutorTtsRoute
   '/api/tutor/videos': typeof ApiTutorVideosRoute
@@ -358,6 +366,7 @@ export interface FileRoutesById {
   '/api/paystack/init': typeof ApiPaystackInitRoute
   '/api/paystack/verify': typeof ApiPaystackVerifyRoute
   '/api/public/paystack-webhook': typeof ApiPublicPaystackWebhookRoute
+  '/api/tutor/models': typeof ApiTutorModelsRoute
   '/api/tutor/stt': typeof ApiTutorSttRoute
   '/api/tutor/tts': typeof ApiTutorTtsRoute
   '/api/tutor/videos': typeof ApiTutorVideosRoute
@@ -399,6 +408,7 @@ export interface FileRouteTypes {
     | '/api/paystack/init'
     | '/api/paystack/verify'
     | '/api/public/paystack-webhook'
+    | '/api/tutor/models'
     | '/api/tutor/stt'
     | '/api/tutor/tts'
     | '/api/tutor/videos'
@@ -438,6 +448,7 @@ export interface FileRouteTypes {
     | '/api/paystack/init'
     | '/api/paystack/verify'
     | '/api/public/paystack-webhook'
+    | '/api/tutor/models'
     | '/api/tutor/stt'
     | '/api/tutor/tts'
     | '/api/tutor/videos'
@@ -478,6 +489,7 @@ export interface FileRouteTypes {
     | '/api/paystack/init'
     | '/api/paystack/verify'
     | '/api/public/paystack-webhook'
+    | '/api/tutor/models'
     | '/api/tutor/stt'
     | '/api/tutor/tts'
     | '/api/tutor/videos'
@@ -743,6 +755,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPaystackWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/tutor/models': {
+      id: '/api/tutor/models'
+      path: '/models'
+      fullPath: '/api/tutor/models'
+      preLoaderRoute: typeof ApiTutorModelsRouteImport
+      parentRoute: typeof ApiTutorRoute
+    }
     '/api/tutor/stt': {
       id: '/api/tutor/stt'
       path: '/stt'
@@ -827,12 +846,14 @@ const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 interface ApiTutorRouteChildren {
+  ApiTutorModelsRoute: typeof ApiTutorModelsRoute
   ApiTutorSttRoute: typeof ApiTutorSttRoute
   ApiTutorTtsRoute: typeof ApiTutorTtsRoute
   ApiTutorVideosRoute: typeof ApiTutorVideosRoute
 }
 
 const ApiTutorRouteChildren: ApiTutorRouteChildren = {
+  ApiTutorModelsRoute: ApiTutorModelsRoute,
   ApiTutorSttRoute: ApiTutorSttRoute,
   ApiTutorTtsRoute: ApiTutorTtsRoute,
   ApiTutorVideosRoute: ApiTutorVideosRoute,

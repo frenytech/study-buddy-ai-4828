@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { AdminModelSetting } from "@/components/admin-model";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase, authHeader } from "@/lib/supabase";
@@ -34,6 +35,7 @@ function Admin() {
           <TabsTrigger value="import">Bulk upload</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
+          <TabsTrigger value="model">AI Model</TabsTrigger>
         </TabsList>
         <TabsContent value="overview"><Overview /></TabsContent>
         <TabsContent value="ai"><AiGenerator /></TabsContent>
@@ -42,6 +44,7 @@ function Admin() {
         <TabsContent value="import"><BulkImport /></TabsContent>
         <TabsContent value="users"><Users /></TabsContent>
         <TabsContent value="payments"><Payments /></TabsContent>
+        <TabsContent value="model"><AdminModelSetting /></TabsContent>
       </Tabs>
     </div>
   );
