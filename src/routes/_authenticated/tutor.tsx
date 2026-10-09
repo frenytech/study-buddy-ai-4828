@@ -34,6 +34,14 @@ function Tutor() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [playing, setPlaying] = useState<Video | null>(null);
   const [voiceMode, setVoiceMode] = useState(false);
+  const [model, setModel] = useState("");
+  const { data: modelList } = useQuery({
+    queryKey: ["tutor-models"], staleTime: 5 * 60_000,
+    queryFn: async () => {
+      const r = await fetch("/api/tutor/models", { headers: await authHeader() });
+      return r.ok ? ((await r.json()) as { models: string[]; default: string }) : { models: [] as string[], default: "" };
+    },
+  });
   const abort = useRef<AbortController | null>(null);
   const bottom = useRef<HTMLDivElement>(null);
 
@@ -72,7 +80,7 @@ function Tutor() {
       const res = await fetch("/api/tutor", {
         method: "POST", signal: abort.current.signal,
         headers: { "Content-Type": "application/json", ...(await authHeader()) },
-        body: JSON.stringify({ messages: history.slice(-20).map(({ role, content }) => ({ role, content })), action, materialId: materialId || undefined, voice: opts.voice }),
+        body: JSON.stringify({ messages: history.slice(-20).map(({ role, content }) => ({ role, content })), action, materialId: materialId || undefined, voice: opts.voice, model: model || undefined }),
       });
       if (!res.ok || !res.body) {
         const err = await res.json().catch(() => ({}));
@@ -163,6 +171,11 @@ function Tutor() {
             className="h-8 min-w-0 max-w-[55vw] rounded-md border border-input bg-background px-2 text-xs md:max-w-xs">
             <option value="">All my materials & courses</option>
             {(materials ?? []).map((m) => <option key={m.id} value={m.id}>{m.title}</option>)}
+          </select>
+          <select value={model} onChange={(e) => setModel(e.target.value)} aria-label="AI model"
+            className="h-8 min-w-0 max-w-[40vw] rounded-md border border-input bg-background px-2 text-xs md:max-w-[12rem]">
+            <option value="">StudyAI Recommended{modelList?.default ? ` (${modelList.default})` : ""}</option>
+            {(modelList?.models ?? []).map((m) => <option key={m} value={m}>{m}</option>)}
           </select>
           <div className="ml-auto flex gap-1">
             <Button size="sm" variant={voiceMode ? "default" : "outline"} onClick={() => setVoiceMode(!voiceMode)}>
