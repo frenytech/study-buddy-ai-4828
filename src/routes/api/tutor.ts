@@ -43,7 +43,7 @@ export const Route = createFileRoute("/api/tutor")({
         ].filter(Boolean).join("\n\n");
 
         const models = await listTextModels();
-        let model = parsed.data.model;
+        let model: string = parsed.data.model ?? "";
         if (!model || !models.includes(model)) {
           const { data: setting } = await auth.supabase.from("app_settings").select("value").eq("key", "default_tutor_model").maybeSingle();
           model = setting?.value && models.includes(setting.value) ? setting.value : FALLBACK_MODEL;

@@ -17,7 +17,7 @@ export function AdminModelSetting() {
   async function save() {
     if (!pick) return;
     const { error } = await supabase.from("app_settings").upsert({ key: "default_tutor_model", value: pick, updated_at: new Date().toISOString() });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success("Default AI Tutor model saved");
     qc.invalidateQueries({ queryKey: ["tutor-models"] });
   }
