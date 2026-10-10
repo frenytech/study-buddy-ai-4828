@@ -12,9 +12,12 @@ const Body = z.object({
   model: z.string().max(60).optional(),
 });
 
-const SYSTEM = `You are StudyAI Tutor, a patient, encouraging teacher for Nigerian secondary school and pre-university students preparing for JAMB UTME and WAEC SSCE.
-Explain step by step, use simple language and Nigerian context where helpful. Use Markdown for structure and show working for calculations.
-Never invent that a question appeared in a particular exam year.
+const SYSTEM = `You are StudyAI Tutor by FrenyTech, a patient, encouraging teacher for Nigerian university students (and JAMB/WAEC candidates when relevant).
+Adapt every explanation to the student's course, department and academic level given in the CONTEXT.
+Explain accurately and clearly; break difficult topics into steps; give worked examples and practice questions when useful.
+When a student makes a mistake, help them understand why instead of only giving the answer.
+Keep track of the conversation and answer follow-up questions in context. Use Markdown and show working for calculations.
+If you are unsure of a fact, say so plainly instead of guessing. Never invent that a question appeared in a particular exam year.
 Honesty about sources: only say you used the student's PDF or a StudyAI lesson if that material appears in the CONTEXT below. If the context has nothing relevant, answer from general knowledge and do not claim a source.`;
 
 export const Route = createFileRoute("/api/tutor")({
@@ -51,9 +54,11 @@ export const Route = createFileRoute("/api/tutor")({
         const transcript = messages.slice(-12).map((m) => `${m.role === "user" ? "Student" : "Tutor"}: ${m.content}`).join("\n\n");
         const query = `${system}\n\n--- CONVERSATION SO FAR ---\n${transcript}\n\nReply as the Tutor to the student's last message, following the CURRENT MODE.`;
 
+        // History is sent with every request (each call gets a fresh provider session), so
+        // students' conversations can never mix through a shared provider session id.
         let reply: string;
         try {
-          reply = await omegaChat(model, query.slice(0, 24000), request.signal);
+          ({ reply } = await omegaChat(model, query.slice(0, 24000), request.signal));
         } catch (e: any) {
           if (e instanceof OmegaError) return Response.json({ error: e.userMessage }, { status: e.status });
           if (e?.name === "AbortError") return new Response(null, { status: 499 });

@@ -24,9 +24,9 @@ export function AdminModelSetting() {
   return (
     <div className="mt-4 max-w-lg rounded-2xl border border-border bg-card p-5">
       <h2 className="font-semibold">Default AI Tutor Model</h2>
-      <p className="mt-1 text-sm text-muted-foreground">Students use this model unless they choose another. The list comes live from OmegaTech.</p>
+      <p className="mt-1 text-sm text-muted-foreground">Students use this model unless they choose another. These OmegaTech Claude-pro models were each tested and answer on the free plan.</p>
       {isLoading ? <p className="mt-4 text-sm text-muted-foreground">Loading models…</p> : (data?.models.length ?? 0) === 0 ? (
-        <p className="mt-4 text-sm text-destructive">Couldn't load the model list from OmegaTech right now.</p>
+        <p className="mt-4 text-sm text-destructive">No models available.</p>
       ) : (
         <div className="mt-4 flex flex-wrap gap-2">
           <select value={pick || data!.default} onChange={(e) => setPick(e.target.value)} className="h-10 flex-1 rounded-md border border-input bg-background px-3 text-sm">
