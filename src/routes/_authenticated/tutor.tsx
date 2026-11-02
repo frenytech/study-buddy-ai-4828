@@ -13,8 +13,9 @@ export const Route = createFileRoute("/_authenticated/tutor")({
   component: Tutor,
 });
 
-type Msg = { role: "user" | "assistant"; content: string; sources?: string[] };
+type Msg = { role: "user" | "assistant"; content: string; sources?: string[]; model?: string };
 type Video = { id: string; title: string; channel: string; thumbnail: string; duration: string; topic: string };
+type OmegaModel = { name: string; category: string; tier: "free" | "paid" };
 
 const ACTIONS = [
   ["explain", "Explain"], ["simple", "Explain Simply"], ["steps", "Step-by-Step"], ["example", "Give Example"], ["hint", "Hint"],
@@ -35,13 +36,31 @@ function Tutor() {
   const [playing, setPlaying] = useState<Video | null>(null);
   const [voiceMode, setVoiceMode] = useState(false);
   const [model, setModel] = useState("");
+  const prefKey = user ? `studyai-tutor-model:${user.id}` : null;
+  useEffect(() => {
+    if (prefKey) setModel(window.localStorage.getItem(prefKey) ?? "");
+  }, [prefKey]);
+  function changeModel(next: string) {
+    setModel(next);
+    if (prefKey) {
+      if (next) window.localStorage.setItem(prefKey, next);
+      else window.localStorage.removeItem(prefKey);
+    }
+  }
   const { data: modelList } = useQuery({
     queryKey: ["tutor-models"], staleTime: 5 * 60_000,
     queryFn: async () => {
       const r = await fetch("/api/tutor/models", { headers: await authHeader() });
-      return r.ok ? ((await r.json()) as { models: string[]; default: string }) : { models: [] as string[], default: "" };
+      return r.ok ? ((await r.json()) as { models: OmegaModel[]; default: string }) : { models: [] as OmegaModel[], default: "" };
     },
   });
+  const modelGroups = new Map<string, OmegaModel[]>();
+  for (const m of modelList?.models ?? []) {
+    const list = modelGroups.get(m.category) ?? [];
+    list.push(m);
+    modelGroups.set(m.category, list);
+  }
+  const activeModel = model || modelList?.default || "";
   const abort = useRef<AbortController | null>(null);
   const bottom = useRef<HTMLDivElement>(null);
 
@@ -82,6 +101,7 @@ function Tutor() {
         headers: { "Content-Type": "application/json", ...(await authHeader()) },
         body: JSON.stringify({ messages: history.slice(-20).map(({ role, content }) => ({ role, content })), action, materialId: materialId || undefined, voice: opts.voice, model: model || undefined }),
       });
+      const usedModel = res.headers.get("X-Tutor-Model") ?? undefined;
       if (!res.ok || !res.body) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error ?? "The tutor couldn't answer right now.");
@@ -93,7 +113,7 @@ function Tutor() {
         const { done, value } = await reader.read();
         if (done) break;
         full += dec.decode(value, { stream: true });
-        setMessages([...history, { role: "assistant", content: full, sources }]);
+        setMessages([...history, { role: "assistant", content: full, sources, model: usedModel }]);
       }
     } catch (e: any) {
       if (e.name !== "AbortError") { toast.error(e.message); setMessages(history); }
@@ -172,11 +192,19 @@ function Tutor() {
             <option value="">All my materials & courses</option>
             {(materials ?? []).map((m) => <option key={m.id} value={m.id}>{m.title}</option>)}
           </select>
-          <select value={model} onChange={(e) => setModel(e.target.value)} aria-label="AI model"
+          <select value={model} onChange={(e) => changeModel(e.target.value)} aria-label="AI model"
             className="h-8 min-w-0 max-w-[40vw] rounded-md border border-input bg-background px-2 text-xs md:max-w-[12rem]">
             <option value="">StudyAI Recommended{modelList?.default ? ` (${modelList.default})` : ""}</option>
-            {(modelList?.models ?? []).map((m) => <option key={m} value={m}>{m}</option>)}
+            {[...modelGroups.entries()].map(([cat, ms]) => (
+              <optgroup key={cat} label={cat}>
+                {ms.map((m) => <option key={m.name} value={m.name}>{m.name}{m.tier === "paid" ? " — needs paid account" : ""}</option>)}
+              </optgroup>
+            ))}
           </select>
+          <span className="hidden items-center gap-1 text-xs text-muted-foreground sm:flex" aria-live="polite">
+            <span className={`h-2 w-2 rounded-full ${modelList ? "bg-emerald-500" : "bg-muted-foreground/40"}`} />
+            {modelList ? `Model: ${activeModel} · ready` : "Model: loading…"}
+          </span>
           <div className="ml-auto flex gap-1">
             <Button size="sm" variant={voiceMode ? "default" : "outline"} onClick={() => setVoiceMode(!voiceMode)}>
               {voiceMode ? <><MessageSquare className="h-4 w-4" />Text chat</> : <><Mic className="h-4 w-4" />Voice Mode</>}
@@ -210,6 +238,7 @@ function Tutor() {
                     <div className="min-w-0 flex-1">
                       <div className="whitespace-pre-wrap break-words leading-relaxed">{m.content || <span className="animate-pulse text-muted-foreground">Thinking…</span>}</div>
                       {m.sources && m.sources.length > 0 && <p className="mt-2 text-xs text-muted-foreground">Used: {m.sources.join(" · ")}</p>}
+                      {m.content && m.model && <p className="text-[10px] text-muted-foreground">Model: {m.model}</p>}
                       {m.content && (
                         <div className="mt-1 flex gap-1 text-muted-foreground">
                           <button className="rounded p-1 hover:bg-muted" aria-label="Copy" onClick={() => { void navigator.clipboard.writeText(m.content); toast.success("Copied"); }}><Copy className="h-3.5 w-3.5" /></button>

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { z } from "zod";
 import { getRequestUser } from "@/lib/server-auth.server";
 import { ACTIONS, buildContext, type TutorAction } from "@/lib/tutor-context.server";
-import { listTextModels, omegaChat, OmegaError, FALLBACK_MODEL } from "@/lib/omegatech.server";
+import { isKnownModel, omegaChat, OmegaError, FALLBACK_MODEL } from "@/lib/omegatech.server";
 
 const Body = z.object({
   messages: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string().min(1).max(8000) })).min(1).max(40),
@@ -45,11 +45,10 @@ export const Route = createFileRoute("/api/tutor")({
           ctx.text ? `CONTEXT (the student's real data):\n${ctx.text}` : "CONTEXT: none relevant found — use general knowledge.",
         ].filter(Boolean).join("\n\n");
 
-        const models = await listTextModels();
         let model: string = parsed.data.model ?? "";
-        if (!model || !models.includes(model)) {
+        if (!model || !isKnownModel(model)) {
           const { data: setting } = await auth.supabase.from("app_settings").select("value").eq("key", "default_tutor_model").maybeSingle();
-          model = setting?.value && models.includes(setting.value) ? setting.value : FALLBACK_MODEL;
+          model = setting?.value && isKnownModel(setting.value) ? setting.value : FALLBACK_MODEL;
         }
         const transcript = messages.slice(-12).map((m) => `${m.role === "user" ? "Student" : "Tutor"}: ${m.content}`).join("\n\n");
         const query = `${system}\n\n--- CONVERSATION SO FAR ---\n${transcript}\n\nReply as the Tutor to the student's last message, following the CURRENT MODE.`;
