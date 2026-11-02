@@ -101,7 +101,7 @@ function Tutor() {
         headers: { "Content-Type": "application/json", ...(await authHeader()) },
         body: JSON.stringify({ messages: history.slice(-20).map(({ role, content }) => ({ role, content })), action, materialId: materialId || undefined, voice: opts.voice, model: model || undefined }),
       });
-      const usedModel = res.headers.get("X-Tutor-Model") ?? undefined;
+      const usedModel = res.headers.get("X-Tutor-Model") ?? "";
       if (!res.ok || !res.body) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error ?? "The tutor couldn't answer right now.");
